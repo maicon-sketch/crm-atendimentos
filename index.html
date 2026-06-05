@@ -251,11 +251,14 @@
         function inicializarDashboard(rows) {
             if (!rows || rows.length < 2) return;
 
-            // Mapeamento inteligente de cabeçalhos (Evita quebra se as colunas mudarem de lugar)
+            // Mapeamento inteligente de cabeçalhos
             const cabeçalhos = rows[0].map(c => String(c).trim().toLowerCase());
             const idxData = cabeçalhos.findIndex(h => h.includes("data"));
             const idxNome = cabeçalhos.findIndex(h => h.includes("nome"));
-            const idxCanal = cabeçalhos.findIndex(h => h.includes("canal"));
+            
+            // 🚨 CORREÇÃO 1 APLICADA: Agora ele procura por Canal, Origem, Fonte ou Rede
+            const idxCanal = cabeçalhos.findIndex(h => h.includes("canal") || h.includes("origem") || h.includes("fonte") || h.includes("rede"));
+            
             const idxConsultor = cabeçalhos.findIndex(h => h.includes("consultor"));
             const idxOrcamento = cabeçalhos.findIndex(h => h.includes("orça") || h.includes("orca"));
             const idxStatus = cabeçalhos.findIndex(h => h.includes("status"));
@@ -269,7 +272,6 @@
                 
                 if (!dataRaw || !nomeRaw || dataRaw === "") continue;
 
-                // TRADUTOR DE DATAS: Transforma DD/MM/YYYY em YYYY-MM-DD para bater com os filtros
                 let dataFormatada = String(dataRaw).trim();
                 if (dataFormatada.includes("/")) {
                     const partes = dataFormatada.split("/");
@@ -281,13 +283,21 @@
                 dadosTratados.push({
                     data: dataFormatada,
                     nome: String(nomeRaw),
-                    canal: idxCanal !== -1 ? String(colunas[idxCanal]) : "Outros",
+                    
+                    // 🚨 CORREÇÃO 2 APLICADA: Se o canal estiver vazio lá na planilha, ele cai como "Não Informado" para não zerar o gráfico
+                    canal: (idxCanal !== -1 && colunas[idxCanal] && colunas[idxCanal] !== "") ? String(colunas[idxCanal]).trim() : "Não Informado",
+                    
                     consultor: idxConsultor !== -1 ? String(colunas[idxConsultor]) : "Sem Consultor",
                     orcamento: idxOrcamento !== -1 ? String(colunas[idxOrcamento]) : "Não",
                     status: idxStatus !== -1 ? String(colunas[idxStatus]) : "Em Atendimento"
                 });
             }
 
+            // Remove eventos antigos antes de ligar os novos
+            document.getElementById("filter-date-start").removeEventListener("change", processarEAtualizarDashboardCompleto);
+            document.getElementById("filter-date-end").removeEventListener("change", processarEAtualizarDashboardCompleto);
+            document.getElementById("filter-consultant").removeEventListener("change", processarEAtualizarDashboardCompleto);
+            
             document.getElementById("filter-date-start").addEventListener("change", processarEAtualizarDashboardCompleto);
             document.getElementById("filter-date-end").addEventListener("change", processarEAtualizarDashboardCompleto);
             document.getElementById("filter-consultant").addEventListener("change", processarEAtualizarDashboardCompleto);

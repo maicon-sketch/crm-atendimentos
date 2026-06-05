@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>CRM Atendimentos</title>
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="CRM Atendimentos">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="CRM Atendimentos">
+    <meta name="theme-color" content="#0f172a"> 
+    
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        html, body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f8fafc; 
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            position: fixed; /* Essencial para travar o efeito elástico do iPhone */
+            overflow: hidden !important; 
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        #content-wrapper {
+            height: 100%; width: 100%;
+            overflow-y: scroll !important;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-y: contain !important; 
+        }
+        
+        .chart-container { position: relative; height: 260px; width: 100%; }
+        .scroll-touch { -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; overscroll-behavior-y: contain !important; }
+    </style>
+</head>
+<body class="text-slate-800 antialiased relative select-none md:select-text">
+
+    <div id="tela-login" class="fixed inset-0 bg-slate-900/90 backdrop-blur-md flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-sm p-6 space-y-4">
+            <div class="text-center space-y-1">
+                <div class="bg-teal-500 text-slate-900 p-3 rounded-full w-12 h-12 flex items-center justify-center mx-auto shadow-md">
+                    <i class="fa-solid fa-lock text-lg"></i>
+                </div>
+                <h2 class="text-lg font-bold text-slate-800 tracking-tight">Identificação do Consultor</h2>
+                <p class="text-xs text-slate-400">Insira suas credenciais para acessar o painel</p>
+            </div>
+            
+            <div id="login-erro" class="bg-rose-50 text-rose-700 border border-rose-200 text-xs font-bold p-3 rounded-xl text-center hidden">
+                <i class="fa-solid fa-circle-xmark mr-1"></i> Usuário ou PIN incorreto!
+            </div>
+
+            <form id="formLogin" class="space-y-3.5" onsubmit="autenticarUsuario(event)">
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-400 mb-1 tracking-wide">Usuário</label>
+                    <select id="loginUsuario" required class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:outline-none focus:border-teal-500 focus:bg-white min-h-[46px]">
+                        <option value="">Selecione seu nome...</option>
+                        <option value="Claudia">Claudia</option>
+                        <option value="Fabio">Fabio</option>
+                        <option value="Maicon">Maicon</option>
+                        <option value="Adm">Administrador (Geral)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-400 mb-1 tracking-wide">PIN de Acesso (4 dígitos)</label>
+                    <input type="password" id="loginPin" required maxlength="4" placeholder="••••" pattern="\d*" inputmode="numeric"
+                           class="w-full text-center text-lg tracking-widest bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:border-teal-500 focus:bg-white min-h-[46px]">
+                </div>
+                <button type="submit" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 rounded-xl text-sm shadow-md cursor-pointer transition-colors min-h-[46px]">
+                    <i class="fa-solid fa-right-to-bracket mr-1"></i> Entrar no Painel
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="banner-erro" class="bg-rose-600 text-white px-4 py-3 text-center text-xs font-bold hidden sticky top-0 z-50 shadow-md flex items-center justify-center gap-2">
+        <i class="fa-solid fa-triangle-exclamation text-base animate-bounce"></i>
+        <span id="mensagem-erro">Aviso: Erro de conexão com o banco de dados.</span>
+    </div>
+
+    <div id="content-wrapper">
+        <header class="bg-slate-900 text-white shadow-md sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto px-4 py-3.5 flex flex-col sm:flex-row justify-between items-center gap-3">
+                <div class="flex items-center gap-3 w-full sm:w-auto">
+                    <div class="bg-teal-500 p-2 rounded-lg shadow-inner shrink-0">
+                        <i class="fa-solid fa-chart-line text-lg text-slate-900"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold tracking-tight leading-tight">Dashboard de Atendimentos</h1>
+                        <p class="text-xs text-slate-400">Logado como: <span id="usuario-logado-badge" class="text-teal-400 font-bold">-</span></p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-3 justify-between sm:justify-end w-full sm:w-auto border-t border-slate-800 pt-3 sm:pt-0 sm:border-none">
+                    <div class="flex items-center gap-2 bg-emerald-950/40 px-3 py-1.5 rounded-full border border-emerald-500/30 text-[11px]">
+                        <span id="connection-status" class="text-emerald-400 font-bold">Online</span>
+                    </div>
+                    
+                    <button onclick="deslogarUsuario()" class="bg-rose-600 active:bg-rose-700 text-white font-bold px-3 py-2 rounded-xl flex items-center justify-center gap-1.5 text-xs transition-colors shadow-md cursor-pointer active:scale-95 duration-100 min-h-[38px]">
+                        <i class="fa-solid fa-right-from-bracket"></i> <span>Deslogar</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto px-4 py-4 space-y-4">
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200/80 flex flex-col gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Data Início</label>
+                        <input type="date" id="filter-date-start" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:border-teal-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Data Fim</label>
+                        <input type="date" id="filter-date-end" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:border-teal-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Consultor Geral</label>
+                        <select id="filter-consultant" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:border-teal-500">
+                            <option value="todos">Todos os Consultores</option>
+                        </select>
+                    </div>
+                </div>
+                <button id="btn-reset-filters" class="w-full text-xs font-bold bg-slate-100 py-2.5 rounded-xl text-slate-600"><i class="fa-solid fa-arrow-rotate-left mr-1"></i> Limpar Filtros</button>
+            </div>
+
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <div class="bg-white p-4 rounded-xl border border-slate-200/80"><span class="text-[11px] font-bold text-slate-400 uppercase block">Atendimentos</span><h3 id="kpi-total-atendimentos" class="text-2xl font-bold text-slate-800">0</h3></div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200/80"><span class="text-[11px] font-bold text-slate-400 uppercase block">No Mês</span><h3 id="kpi-mes-atual" class="text-2xl font-bold text-slate-800">0</h3></div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200/80"><span class="text-[11px] font-bold text-slate-400 uppercase block">Orçamentos</span><h3 id="kpi-orcamentos-enviados" class="text-2xl font-bold text-slate-800">0</h3></div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200/80"><span class="text-[11px] font-bold text-slate-400 uppercase block">Conversão</span><h3 id="kpi-taxa-conclusao" class="text-2xl font-bold text-slate-800">0%</h3></div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div class="bg-white p-4 rounded-xl border border-slate-200/80"><h3 class="font-bold text-slate-700 text-xs mb-2">Por Consultor</h3><div class="chart-container"><canvas id="chart-consultores"></canvas></div></div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200/80"><h3 class="font-bold text-slate-700 text-xs mb-2">Por Status</h3><div class="chart-container flex items-center justify-center"><canvas id="chart-status" style="max-width:220px;"></canvas></div></div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200/80"><h3 class="font-bold text-slate-700 text-xs mb-2">Por Canal</h3><div class="chart-container"><canvas id="chart-canais"></canvas></div></div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200/80"><h3 class="font-bold text-slate-700 text-xs mb-2">Evolução Diária</h3><div class="chart-container"><canvas id="chart-evolucao"></canvas></div></div>
+            </div>
+
+            <div class="bg-white rounded-xl border border-slate-200/80 overflow-hidden">
+                <div class="p-4 bg-slate-50 flex justify-between items-center"><h3 class="font-bold text-slate-700 text-sm">Histórico Detalhado</h3><span id="table-row-count" class="text-xs bg-teal-50 text-teal-700 font-bold px-2 py-0.5 rounded-md">0</span></div>
+                <div class="overflow-x-auto scroll-touch">
+                    <table class="w-full text-left text-xs">
+                        <thead><tr class="bg-slate-100 text-slate-500 font-bold uppercase"><th class="px-4 py-3">Data</th><th class="px-4 py-3">Cliente</th><th class="px-4 py-3">Canal</th><th class="px-4 py-3">Consultor</th><th class="px-4 py-3 text-center">Orç.</th><th class="px-4 py-3 text-center">Status</th></tr>--3></thead>
+                        <tbody id="table-body" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // ⚠️ ATENÇÃO: COLE A URL DO SEU GOOGLE APPS SCRIPT EXATAMENTE AQUI DENTRO DAS ASPAS:
+        const SCRIPT_URL = "COLE_AQUI_A_URL_DO_SEU_GOOGLE_SCRIPT_TERMINADA_EM_EXEC";
+
+        let dadosTratados = [];
+        let chartConsultoresInstance, chartStatusInstance, chartCanaisInstance, chartEvolucaoInstance;
+        const BASE_ACESSOS = { "Claudia": "2021", "Fabio": "3031", "Maicon": "4041", "Adm": "9999" };
+        let usuarioLogado = "";
+
+        // 🔓 FUNÇÃO DESLOGAR: Limpa a credencial e tranca a tela novamente
+        function deslogarUsuario() {
+            usuarioLogado = "";
+            document.getElementById("loginPin").value = "";
+            document.getElementById("usuario-logado-badge").innerText = "-";
+            document.getElementById("tela-login").classList.remove("hidden");
+            document.getElementById("formLogin").reset();
+        }
+
+        function autenticarUsuario(event) {
+            event.preventDefault();
+            const usr = document.getElementById("loginUsuario").value;
+            const pin = document.getElementById("loginPin").value;
+            if (BASE_ACESSOS[usr] && BASE_ACESSOS[usr] === pin) {
+                usuarioLogado = usr;
+                document.getElementById("usuario-logado-badge").innerText = usr;
+                document.getElementById("tela-login").classList.add("hidden");
+                configurarAcessosPorNivelDePerfil();
+                processarEAtualizarDashboardCompleto();
+            } else {
+                document.getElementById("login-erro").classList.remove("hidden");
+                document.getElementById("loginPin").value = "";
+            }
+        }
+
+        function configurarAcessosPorNivelDePerfil() {
+            const select = document.getElementById("filter-consultant");
+            if (usuarioLogado === "Claudia" || usuarioLogado === "Maicon") {
+                select.innerHTML = `<option value="${usuarioLogado}">${usuarioLogado}</option>`;
+                select.disabled = true;
+            } else {
+                select.disabled = false;
+                select.innerHTML = '<option value="todos">Todos os Consultores</option>';
+                ["Claudia", "Fabio", "Maicon"].forEach(c => select.innerHTML += `<option value="${c}">${c}</option>`);
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            configurarDatasPadrao();
+            carregarDadosDoServidor();
+            
+            // Trava mecânica complementar de toque para o motor Safari do iPhone
+            const wrapper = document.getElementById('content-wrapper');
+            if (wrapper) {
+                wrapper.addEventListener('touchstart', () => {
+                    if (wrapper.scrollTop === 0) wrapper.scrollTop = 1;
+                }, { passive: true });
+            }
+        });
+
+        function configurarDatasPadrao() {
+            const hoje = new Date();
+            document.getElementById("filter-date-start").value = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().split('T')[0];
+            document.getElementById("filter-date-end").value = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() + 1).toISOString().split('T')[0];
+        }
+
+        function carregarDadosDoServidor() {
+            fetch(SCRIPT_URL)
+                .then(res => res.json())
+                .then(data => inicializarDashboard(data))
+                .catch(err => document.getElementById("banner-erro").classList.remove("hidden"));
+        }
+
+        function inicializarDashboard(rows) {
+            if (!rows || rows.length < 2) return;
+            dadosTratados = [];
+            for (let i = 1; i < rows.length; i++) {
+                const col = rows[i];
+                if (!col[0] || !col[1]) continue;
+                dadosTratados.push({
+                    data: col[0], nome: col[1], canal: col[2] || "Outros",
+                    consultor: col[3] || "Sem Consultor", orcamento: col[4] || "Não", status: col[5] || "Em Atendimento"
+                });
+            }
+            document.getElementById("filter-date-start").addEventListener("change", processarEAtualizarDashboardCompleto);
+            document.getElementById("filter-date-end").addEventListener("change", processarEAtualizarDashboardCompleto);
+            document.getElementById("filter-consultant").addEventListener("change", processarEAtualizarDashboardCompleto);
+            document.getElementById("btn-reset-filters").onclick = () => { configurarDatasPadrao(); processarEAtualizarDashboardCompleto(); };
+            if (usuarioLogado !== "") processarEAtualizarDashboardCompleto();
+        }
+
+        function processarEAtualizarDashboardCompleto() {
+            if (usuarioLogado === "") return;
+            const start = document.getElementById("filter-date-start").value;
+            const end = document.getElementById("filter-date-end").value;
+            let filterCons = document.getElementById("filter-consultant").value;
+            if (usuarioLogado === "Claudia" || usuarioLogado === "Maicon") filterCons = usuarioLogado;
+
+            const filtrados = dadosTratados.filter(d => {
+                return (start ? d.data >= start : true) && (end ? d.data <= end : true) && (filterCons === "todos" ? true : d.consultor === filterCons);
+            });
+
+            atualizarKPIs(filtrados);
+            renderizarTabela(filtrados);
+            renderizarGraficos(filtrados);
+        }
+
+        function renderizarTabela(dados) {
+            const tbody = document.getElementById("table-body");
+            tbody.innerHTML = "";
+            document.getElementById("table-row-count").innerText = dados.length;
+            dados.forEach(item => {
+                const tr = document.createElement("tr");
+                let stClass = "bg-blue-50 text-blue-700 border border-blue-100";
+                if(item.status.includes("Concluído") || item.status.includes("Finalizado") || item.status.includes("Aguardando")) stClass = "bg-emerald-50 text-emerald-700 border border-emerald-100";
+                tr.innerHTML = `<td class="px-4 py-2 text-slate-500">${item.data}</td><td class="px-4 py-2 font-bold">${item.nome}</td><td class="px-4 py-2">${item.canal}</td><td class="px-4 py-2">${item.consultor}</td><td class="px-4 py-2 text-center">${item.orcamento}</td><td class="px-4 py-2 text-center"><span class="px-2 py-0.5 rounded-full ${stClass}">${item.status}</span></td>`;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function atualizarKPIs(dados) {
+            document.getElementById("kpi-total-atendimentos").innerText = dados.length;
+            document.getElementById("kpi-mes-atual").innerText = dados.length;
+            const orc = dados.filter(d => d.orcamento.toLowerCase() === "sim").length;
+            document.getElementById("kpi-orcamentos-enviados").innerText = orc;
+            const conc = dados.filter(d => d.status.includes("Concluído") || d.status.includes("Finalizado")).length;
+            document.getElementById("kpi-taxa-conclusao").innerText = `${dados.length > 0 ? Math.round((conc / dados.length) * 100) : 0}%`;
+        }
+
+        function renderizarGraficos(dados) {
+            const cCons = {}, cStat = {}, cCan = {}, cData = {};
+            dados.forEach(d => { cCons[d.consultor] = (cCons[d.consultor] || 0) + 1; cStat[d.status] = (cStat[d.status] || 0) + 1; cCan[d.canal] = (cCan[d.canal] || 0) + 1; cData[d.data] = (cData[d.data] || 0) + 1; });
+            const opt = { responsive: true, maintainAspectRatio: false, plugins: { legend: false } };
+
+            if (chartConsultoresInstance) chartConsultoresInstance.destroy();
+            chartConsultoresInstance = new Chart(document.getElementById('chart-consultores').getContext('2d'), { type: 'bar', data: { labels: Object.keys(cCons), datasets: [{ data: Object.values(cCons), backgroundColor: '#3b82f6' }] }, options: opt });
+            if (chartStatusInstance) chartStatusInstance.destroy();
+            chartStatusInstance = new Chart(document.getElementById('chart-status').getContext('2d'), { type: 'doughnut', data: { labels: Object.keys(cStat), datasets: [{ data: Object.values(cStat), backgroundColor: ['#10b981', '#3b82f6', '#ef4444'] }] }, options: { cutout: '65%', ...opt } });
+            if (chartCanaisInstance) chartCanaisInstance.destroy();
+            chartCanaisInstance = new Chart(document.getElementById('chart-canais').getContext('2d'), { type: 'bar', data: { labels: Object.keys(cCan), datasets: [{ data: Object.values(cCan), backgroundColor: '#0f766e' }] }, options: { indexAxis: 'y', ...opt } });
+            if (chartEvolucaoInstance) chartEvolucaoInstance.destroy();
+            chartEvolucaoInstance = new Chart(document.getElementById('chart-evolucao').getContext('2d'), { type: 'line', data: { labels: Object.keys(cData), datasets: [{ data: Object.values(cData), borderColor: '#10b981', fill: false }] }, options: opt });
+        }
+    </script>
+</body>
+</html>

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>CRM Atendimentos</title>
     
+    <!-- DIRETIVAS NATIVAS DE APLICATIVO MÓVEL -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="CRM Atendimentos">
@@ -12,10 +13,9 @@
     <meta name="application-name" content="CRM Atendimentos">
     <meta name="theme-color" content="#0f172a"> 
     
+    <!-- ÍCONE PERSONALIZADO EM ALTA RESOLUÇÃO -->
     <link rel="apple-touch-icon" href="https://i.postimg.cc/2SvFrtpx/Gemini-Generated-Image-2qs3k22qs3k22qs3.png">
     <link rel="icon" type="image/png" href="https://i.postimg.cc/2SvFrtpx/Gemini-Generated-Image-2qs3k22qs3k22qs3.png">
-
-    <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjogIkNSTSBBdGVuZGltZW50b3MiLCAic2hvcnRfbmFtZSI6ICJDUk0iLCAic3RhcnRfdXJsIjogIi4iLCAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwgImJhY2tncm91bmRfY29sb3IiOiAiI2Y4ZmFmYyIsICJ0aGVtZV9jb2xvciI6ICIjMGYxNzJhIiwgImljb25zIjogW3sic3JjIjogImh0dHBzOi8vaS5wb3N0aW1nLmNjLzJTdkZydHB4L0dlbWluaS1HZW5lcmF0ZWQtSW1hZ2UtMnFzM2syMnFzMy5wbmciLCAic2l6ZXMiOiAiNTEyeDUxMiIsICJ0eXBlIjogImltYWdlL3BuZyIsICJwdXJwb3NlIjogImFueSBtYXJrYWJsZSJ9XX0=">
 
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -47,6 +47,7 @@
 </head>
 <body class="text-slate-800 antialiased relative select-none md:select-text">
 
+    <!-- TELA DE LOGIN OBRIGATÓRIA -->
     <div id="tela-login" class="fixed inset-0 bg-slate-900/90 backdrop-blur-md flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-sm p-6 space-y-4">
             <div class="text-center space-y-1">
@@ -84,12 +85,14 @@
         </div>
     </div>
 
+    <!-- BANNER DE DIAGNÓSTICO -->
     <div id="banner-erro" class="bg-rose-600 text-white px-4 py-3 text-center text-xs font-bold hidden sticky top-0 z-50 shadow-md flex items-center justify-center gap-2">
         <i class="fa-solid fa-triangle-exclamation text-base animate-bounce"></i>
-        <span id="mensagem-erro">Aviso: Erro de conexão com o banco de dados.</span>
+        <span id="mensagem-erro">Aviso: Erro de sincronização com o banco de dados da planilha.</span>
     </div>
 
     <div id="content-wrapper">
+        <!-- Header -->
         <header class="bg-slate-900 text-white shadow-md sticky top-0 z-40">
             <div class="max-w-7xl mx-auto px-4 py-3.5 flex flex-col sm:flex-row justify-between items-center gap-3">
                 <div class="flex items-center gap-3 w-full sm:w-auto">
@@ -104,7 +107,7 @@
                 
                 <div class="flex items-center gap-3 justify-between sm:justify-end w-full sm:w-auto border-t border-slate-800 pt-3 sm:pt-0 sm:border-none">
                     <div class="flex items-center gap-2 bg-emerald-950/40 px-3 py-1.5 rounded-full border border-emerald-500/30 text-[11px]">
-                        <span id="connection-status" class="text-emerald-400 font-bold">Online</span>
+                        <span id="connection-status" class="text-emerald-400 font-bold">Conectado</span>
                     </div>
                     
                     <button onclick="deslogarUsuario()" class="bg-rose-600 active:bg-rose-700 text-white font-bold px-3 py-2 rounded-xl flex items-center justify-center gap-1.5 text-xs transition-colors shadow-md cursor-pointer active:scale-95 duration-100 min-h-[38px]">
@@ -115,6 +118,7 @@
         </header>
 
         <main class="max-w-7xl mx-auto px-4 py-4 space-y-4">
+            <!-- FILTERS PANEL -->
             <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200/80 flex flex-col gap-3">
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
@@ -135,6 +139,7 @@
                 <button id="btn-reset-filters" class="w-full text-xs font-bold bg-slate-100 py-2.5 rounded-xl text-slate-600"><i class="fa-solid fa-arrow-rotate-left mr-1"></i> Limpar Filtros</button>
             </div>
 
+            <!-- KPI CARDS -->
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 <div class="bg-white p-4 rounded-xl border border-slate-200/80"><span class="text-[11px] font-bold text-slate-400 uppercase block">Atendimentos</span><h3 id="kpi-total-atendimentos" class="text-2xl font-bold text-slate-800">0</h3></div>
                 <div class="bg-white p-4 rounded-xl border border-slate-200/80"><span class="text-[11px] font-bold text-slate-400 uppercase block">No Mês</span><h3 id="kpi-mes-atual" class="text-2xl font-bold text-slate-800">0</h3></div>
@@ -142,6 +147,7 @@
                 <div class="bg-white p-4 rounded-xl border border-slate-200/80"><span class="text-[11px] font-bold text-slate-400 uppercase block">Conversão</span><h3 id="kpi-taxa-conclusao" class="text-2xl font-bold text-slate-800">0%</h3></div>
             </div>
 
+            <!-- CHARTS -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div class="bg-white p-4 rounded-xl border border-slate-200/80"><h3 class="font-bold text-slate-700 text-xs mb-2">Por Consultor</h3><div class="chart-container"><canvas id="chart-consultores"></canvas></div></div>
                 <div class="bg-white p-4 rounded-xl border border-slate-200/80"><h3 class="font-bold text-slate-700 text-xs mb-2">Por Status</h3><div class="chart-container flex items-center justify-center"><canvas id="chart-status" style="max-width:220px;"></canvas></div></div>
@@ -149,6 +155,7 @@
                 <div class="bg-white p-4 rounded-xl border border-slate-200/80"><h3 class="font-bold text-slate-700 text-xs mb-2">Evolução Diária</h3><div class="chart-container"><canvas id="chart-evolucao"></canvas></div></div>
             </div>
 
+            <!-- TABLE -->
             <div class="bg-white rounded-xl border border-slate-200/80 overflow-hidden">
                 <div class="p-4 bg-slate-50 flex justify-between items-center"><h3 class="font-bold text-slate-700 text-sm">Histórico Detalhado</h3><span id="table-row-count" class="text-xs bg-teal-50 text-teal-700 font-bold px-2 py-0.5 rounded-md">0</span></div>
                 <div class="overflow-x-auto scroll-touch">
@@ -162,7 +169,7 @@
     </div>
 
     <script>
-        // ⚠️ BUSQUE POR ESTA LINHA COM O CRTL+F PARA COLAR SUA URL DO GOOGLE:
+        // ⚠️ SUA URL DEFINITIVA DO GOOGLE SCRIPT ESTÁ SALVA E CONFIGURADA CORRETAMENTE AQUI:
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyf3Y5lvdPzUDwcvB6FNP5hkL3C6r0SNh9jXqw-DZiQYPgwFU3iH2deNn2xws42sQlL/exec";
 
         let dadosTratados = [];
@@ -223,11 +230,24 @@
             document.getElementById("filter-date-end").value = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() + 1).toISOString().split('T')[0];
         }
 
+        // 🚨 ENGENHARIA JSONP: Ignora barreiras de CORS injetando tags de Script dinâmicas no HTML
         function carregarDadosDoServidor() {
-            fetch(SCRIPT_URL)
-                .then(res => res.json())
-                .then(data => inicializarDashboard(data))
-                .catch(err => document.getElementById("banner-erro").classList.remove("hidden"));
+            // Cria a função receptora global necessária para o JSONP funcionar
+            window.handleGoogleData = function(data) {
+                document.getElementById("banner-erro").classList.add("hidden");
+                inicializarDashboard(data);
+                document.getElementById('jsonp-bridge')?.remove(); // Auto-limpeza
+            };
+
+            const script = document.createElement('script');
+            script.id = 'jsonp-bridge';
+            script.src = SCRIPT_URL + "?callback=handleGoogleData";
+            
+            script.onerror = function() {
+                document.getElementById("banner-erro").classList.remove("hidden");
+            };
+            
+            document.body.appendChild(script);
         }
 
         function inicializarDashboard(rows) {
@@ -241,10 +261,17 @@
                     consultor: col[3] || "Sem Consultor", orcamento: col[4] || "Não", status: col[5] || "Em Atendimento"
                 });
             }
+            
+            // Remove eventos antigos antes de ligar os novos para não triplicar processamento
+            document.getElementById("filter-date-start").removeEventListener("change", processarEAtualizarDashboardCompleto);
+            document.getElementById("filter-date-end").removeEventListener("change", processarEAtualizarDashboardCompleto);
+            document.getElementById("filter-consultant").removeEventListener("change", processarEAtualizarDashboardCompleto);
+            
             document.getElementById("filter-date-start").addEventListener("change", processarEAtualizarDashboardCompleto);
             document.getElementById("filter-date-end").addEventListener("change", processarEAtualizarDashboardCompleto);
             document.getElementById("filter-consultant").addEventListener("change", processarEAtualizarDashboardCompleto);
             document.getElementById("btn-reset-filters").onclick = () => { configurarDatasPadrao(); processarEAtualizarDashboardCompleto(); };
+            
             if (usuarioLogado !== "") processarEAtualizarDashboardCompleto();
         }
 

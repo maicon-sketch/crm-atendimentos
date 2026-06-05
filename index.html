@@ -248,19 +248,17 @@
         }
 
         // TRATAMENTO DE MATRIZ E NORMALIZAÇÃO DE DATAS SÊNIOR
+        // TRATAMENTO DE MATRIZ ALINHADO COM A PLANILHA REAL
         function inicializarDashboard(rows) {
             if (!rows || rows.length < 2) return;
 
-            // Mapeamento inteligente de cabeçalhos
+            // Mapeamento inteligente por cabeçalho real da imagem
             const cabeçalhos = rows[0].map(c => String(c).trim().toLowerCase());
             const idxData = cabeçalhos.findIndex(h => h.includes("data"));
             const idxNome = cabeçalhos.findIndex(h => h.includes("nome"));
-            
-            // 🚨 CORREÇÃO 1 APLICADA: Agora ele procura por Canal, Origem, Fonte ou Rede
-            const idxCanal = cabeçalhos.findIndex(h => h.includes("canal") || h.includes("origem") || h.includes("fonte") || h.includes("rede"));
-            
+            const idxCanal = cabeçalhos.findIndex(h => h.includes("canal"));
             const idxConsultor = cabeçalhos.findIndex(h => h.includes("consultor"));
-            const idxOrcamento = cabeçalhos.findIndex(h => h.includes("orça") || h.includes("orca"));
+            const idxOrcamento = cabeçalhos.findIndex(h => h.includes("orçamento") || h.includes("orca"));
             const idxStatus = cabeçalhos.findIndex(h => h.includes("status"));
 
             dadosTratados = [];
@@ -272,6 +270,7 @@
                 
                 if (!dataRaw || !nomeRaw || dataRaw === "") continue;
 
+                // Tradutor de datas padrão para o calendário
                 let dataFormatada = String(dataRaw).trim();
                 if (dataFormatada.includes("/")) {
                     const partes = dataFormatada.split("/");
@@ -280,20 +279,18 @@
                     }
                 }
 
+                // Captura cirúrgica das posições da planilha mapeada
                 dadosTratados.push({
                     data: dataFormatada,
                     nome: String(nomeRaw),
-                    
-                    // 🚨 CORREÇÃO 2 APLICADA: Se o canal estiver vazio lá na planilha, ele cai como "Não Informado" para não zerar o gráfico
                     canal: (idxCanal !== -1 && colunas[idxCanal] && colunas[idxCanal] !== "") ? String(colunas[idxCanal]).trim() : "Não Informado",
-                    
-                    consultor: idxConsultor !== -1 ? String(colunas[idxConsultor]) : "Sem Consultor",
-                    orcamento: idxOrcamento !== -1 ? String(colunas[idxOrcamento]) : "Não",
-                    status: idxStatus !== -1 ? String(colunas[idxStatus]) : "Em Atendimento"
+                    consultor: (idxConsultor !== -1 && colunas[idxConsultor]) ? String(colunas[idxConsultor]).trim() : "Sem Consultor",
+                    orcamento: (idxOrcamento !== -1 && colunas[idxOrcamento]) ? String(colunas[idxOrcamento]).trim() : "Não",
+                    status: (idxStatus !== -1 && colunas[idxStatus]) ? String(colunas[idxStatus]).trim() : "Em Atendimento"
                 });
             }
 
-            // Remove eventos antigos antes de ligar os novos
+            // Remove e reaplica os ouvintes de filtros
             document.getElementById("filter-date-start").removeEventListener("change", processarEAtualizarDashboardCompleto);
             document.getElementById("filter-date-end").removeEventListener("change", processarEAtualizarDashboardCompleto);
             document.getElementById("filter-consultant").removeEventListener("change", processarEAtualizarDashboardCompleto);

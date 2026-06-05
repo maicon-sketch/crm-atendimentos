@@ -12,6 +12,11 @@
     <meta name="application-name" content="CRM Atendimentos">
     <meta name="theme-color" content="#0f172a"> 
     
+    <link rel="apple-touch-icon" href="https://i.postimg.cc/2SvFrtpx/Gemini-Generated-Image-2qs3k22qs3k22qs3.png">
+    <link rel="icon" type="image/png" href="https://i.postimg.cc/2SvFrtpx/Gemini-Generated-Image-2qs3k22qs3k22qs3.png">
+
+    <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjogIkNSTSBBdGVuZGltZW50b3MiLCAic2hvcnRfbmFtZSI6ICJDUk0iLCAic3RhcnRfdXJsIjogIi4iLCAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwgImJhY2tncm91bmRfY29sb3IiOiAiI2Y4ZmFmYyIsICJ0aGVtZV9jb2xvciI6ICIjMGYxNzJhIiwgImljb25zIjogW3sic3JjIjogImh0dHBzOi8vaS5wb3N0aW1nLmNjLzJTdkZydHB4L0dlbWluaS1HZW5lcmF0ZWQtSW1hZ2UtMnFzM2syMnFzMy5wbmciLCAic2l6ZXMiOiAiNTEyeDUxMiIsICJ0eXBlIjogImltYWdlL3BuZyIsICJwdXJwb3NlIjogImFueSBtYXJrYWJsZSJ9XX0=">
+
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -24,7 +29,7 @@
             background-color: #f8fafc; 
             margin: 0; padding: 0;
             width: 100%; height: 100%;
-            position: fixed; /* Essencial para travar o efeito elástico do iPhone */
+            position: fixed; 
             overflow: hidden !important; 
             -webkit-tap-highlight-color: transparent;
         }
@@ -148,7 +153,7 @@
                 <div class="p-4 bg-slate-50 flex justify-between items-center"><h3 class="font-bold text-slate-700 text-sm">Histórico Detalhado</h3><span id="table-row-count" class="text-xs bg-teal-50 text-teal-700 font-bold px-2 py-0.5 rounded-md">0</span></div>
                 <div class="overflow-x-auto scroll-touch">
                     <table class="w-full text-left text-xs">
-                        <thead><tr class="bg-slate-100 text-slate-500 font-bold uppercase"><th class="px-4 py-3">Data</th><th class="px-4 py-3">Cliente</th><th class="px-4 py-3">Canal</th><th class="px-4 py-3">Consultor</th><th class="px-4 py-3 text-center">Orç.</th><th class="px-4 py-3 text-center">Status</th></tr>--3></thead>
+                        <thead><tr class="bg-slate-100 text-slate-500 font-bold uppercase"><th class="px-4 py-3">Data</th><th class="px-4 py-3">Cliente</th><th class="px-4 py-3">Canal</th><th class="px-4 py-3">Consultor</th><th class="px-4 py-3 text-center">Orç.</th><th class="px-4 py-3 text-center">Status</th></tr></thead>
                         <tbody id="table-body" class="divide-y divide-slate-100"></tbody>
                     </table>
                 </div>
@@ -157,15 +162,14 @@
     </div>
 
     <script>
-        // ⚠️ ATENÇÃO: COLE A URL DO SEU GOOGLE APPS SCRIPT EXATAMENTE AQUI DENTRO DAS ASPAS:
-        const SCRIPT_URL = "COLE_AQUI_A_URL_DO_SEU_GOOGLE_SCRIPT_TERMINADA_EM_EXEC";
+        // ⚠️ BUSQUE POR ESTA LINHA COM O CRTL+F PARA COLAR SUA URL DO GOOGLE:
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyf3Y5lvdPzUDwcvB6FNP5hkL3C6r0SNh9jXqw-DZiQYPgwFU3iH2deNn2xws42sQlL/exec";
 
         let dadosTratados = [];
         let chartConsultoresInstance, chartStatusInstance, chartCanaisInstance, chartEvolucaoInstance;
         const BASE_ACESSOS = { "Claudia": "2021", "Fabio": "3031", "Maicon": "4041", "Adm": "9999" };
         let usuarioLogado = "";
 
-        // 🔓 FUNÇÃO DESLOGAR: Limpa a credencial e tranca a tela novamente
         function deslogarUsuario() {
             usuarioLogado = "";
             document.getElementById("loginPin").value = "";
@@ -205,8 +209,6 @@
         document.addEventListener("DOMContentLoaded", () => {
             configurarDatasPadrao();
             carregarDadosDoServidor();
-            
-            // Trava mecânica complementar de toque para o motor Safari do iPhone
             const wrapper = document.getElementById('content-wrapper');
             if (wrapper) {
                 wrapper.addEventListener('touchstart', () => {

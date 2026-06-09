@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>CRM Atendimentos</title>
     
-    <!-- DIRETIVAS NATIVAS DE APLICATIVO MÓVEL -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="CRM Atendimentos">
@@ -13,7 +12,6 @@
     <meta name="application-name" content="CRM Atendimentos">
     <meta name="theme-color" content="#0f172a"> 
     
-    <!-- ÍCONE PERSONALIZADO EM ALTA RESOLUÇÃO -->
     <link rel="apple-touch-icon" href="https://i.postimg.cc/2SvFrtpx/Gemini-Generated-Image-2qs3k22qs3k22qs3.png">
     <link rel="icon" type="image/png" href="https://i.postimg.cc/2SvFrtpx/Gemini-Generated-Image-2qs3k22qs3k22qs3.png">
 
@@ -47,7 +45,6 @@
 </head>
 <body class="text-slate-800 antialiased relative select-none md:select-text">
 
-    <!-- TELA DE LOGIN OBRIGATÓRIA -->
     <div id="tela-login" class="fixed inset-0 bg-slate-900/90 backdrop-blur-md flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-sm p-6 space-y-4">
             <div class="text-center space-y-1">
@@ -85,14 +82,95 @@
         </div>
     </div>
 
-    <!-- BANNER DE DIAGNÓSTICO -->
+    <div id="modal-novo" class="fixed inset-0 bg-slate-900/90 backdrop-blur-sm flex items-center justify-center z-50 p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md flex flex-col max-h-[90vh] overflow-hidden">
+            <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2"><i class="fa-solid fa-user-plus text-teal-600"></i> Novo Atendimento</h3>
+                <button onclick="fecharModalNovo()" class="text-slate-400 hover:text-rose-500 transition-colors w-8 h-8 flex items-center justify-center rounded-full bg-slate-200/50">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            
+            <div class="p-5 overflow-y-auto scroll-touch">
+                <form id="form-novo" class="space-y-4" onsubmit="salvarNovoAtendimento(event)">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Data</label>
+                            <input type="date" id="novo-data" required class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:border-teal-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Consultor</label>
+                            <select id="novo-consultor" required class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:border-teal-500 outline-none">
+                                <option value="Claudia">Claudia</option>
+                                <option value="Fabio">Fabio</option>
+                                <option value="Maicon">Maicon</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nome do Cliente</label>
+                            <input type="text" id="novo-nome" required placeholder="Ex: João Silva" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:border-teal-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Telefone</label>
+                            <input type="tel" id="novo-telefone" placeholder="(11) 99999-9999" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:border-teal-500 outline-none">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Canal</label>
+                            <select id="novo-canal" required class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:border-teal-500 outline-none">
+                                <option value="WhatsApp">WhatsApp</option>
+                                <option value="Instagram">Instagram</option>
+                                <option value="Indicação">Indicação</option>
+                                <option value="Site">Site</option>
+                                <option value="Outros">Outros</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Orçamento?</label>
+                            <select id="novo-orcamento" required class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:border-teal-500 outline-none">
+                                <option value="Não">Não</option>
+                                <option value="Sim">Sim</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Status</label>
+                            <select id="novo-status" required class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:border-teal-500 outline-none">
+                                <option value="Em Atendimento">Em Atendimento</option>
+                                <option value="Aguardando">Aguardando</option>
+                                <option value="Concluído">Concluído</option>
+                                <option value="Cancelado">Cancelado</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Motivo</label>
+                            <input type="text" id="novo-motivo" placeholder="Opcional" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:border-teal-500 outline-none">
+                        </div>
+                    </div>
+
+                    <div class="pt-2">
+                        <button type="submit" id="btn-salvar-novo" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3.5 rounded-xl text-sm shadow-md transition-colors active:scale-95 duration-100 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> Salvar Atendimento
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <div id="banner-erro" class="bg-rose-600 text-white px-4 py-3 text-center text-xs font-bold hidden sticky top-0 z-50 shadow-md flex items-center justify-center gap-2">
         <i class="fa-solid fa-triangle-exclamation text-base animate-bounce"></i>
-        <span id="mensagem-erro">Aviso: Erro de sincronização com o banco de dados da planilha.</span>
+        <span id="mensagem-erro">Aviso: Erro de sincronização com o banco de dados.</span>
     </div>
 
     <div id="content-wrapper">
-        <!-- Header -->
         <header class="bg-slate-900 text-white shadow-md sticky top-0 z-40">
             <div class="max-w-7xl mx-auto px-4 py-3.5 flex flex-col sm:flex-row justify-between items-center gap-3">
                 <div class="flex items-center gap-3 w-full sm:w-auto">
@@ -106,21 +184,17 @@
                 </div>
                 
                 <div class="flex items-center gap-2 justify-between sm:justify-end w-full sm:w-auto border-t border-slate-800 pt-3 sm:pt-0 sm:border-none">
-                    
                     <button onclick="abrirModalNovo()" class="bg-teal-500 active:bg-teal-600 text-slate-900 font-bold px-4 py-2 rounded-xl flex items-center justify-center gap-2 text-sm transition-colors shadow-md cursor-pointer active:scale-95 duration-100 flex-1 sm:flex-none min-h-[38px]">
                         <i class="fa-solid fa-plus text-base"></i> <span>Novo Atendimento</span>
                     </button>
-
                     <button onclick="deslogarUsuario()" class="bg-rose-600 active:bg-rose-700 text-white font-bold w-[38px] h-[38px] rounded-xl flex items-center justify-center transition-colors shadow-md cursor-pointer active:scale-95 duration-100 shrink-0" title="Sair do Painel">
                         <i class="fa-solid fa-right-from-bracket text-sm"></i>
                     </button>
-
                 </div>
             </div>
         </header>
 
         <main class="max-w-7xl mx-auto px-4 py-4 space-y-4">
-            <!-- FILTERS PANEL -->
             <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200/80 flex flex-col gap-3">
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
@@ -141,7 +215,6 @@
                 <button id="btn-reset-filters" class="w-full text-xs font-bold bg-slate-100 py-2.5 rounded-xl text-slate-600"><i class="fa-solid fa-arrow-rotate-left mr-1"></i> Limpar Filtros</button>
             </div>
 
-            <!-- KPI CARDS -->
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 <div class="bg-white p-4 rounded-xl border border-slate-200/80"><span class="text-[11px] font-bold text-slate-400 uppercase block">Atendimentos</span><h3 id="kpi-total-atendimentos" class="text-2xl font-bold text-slate-800">0</h3></div>
                 <div class="bg-white p-4 rounded-xl border border-slate-200/80"><span class="text-[11px] font-bold text-slate-400 uppercase block">No Mês</span><h3 id="kpi-mes-atual" class="text-2xl font-bold text-slate-800">0</h3></div>
@@ -149,7 +222,6 @@
                 <div class="bg-white p-4 rounded-xl border border-slate-200/80"><span class="text-[11px] font-bold text-slate-400 uppercase block">Conversão</span><h3 id="kpi-taxa-conclusao" class="text-2xl font-bold text-slate-800">0%</h3></div>
             </div>
 
-            <!-- CHARTS -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div class="bg-white p-4 rounded-xl border border-slate-200/80"><h3 class="font-bold text-slate-700 text-xs mb-2">Por Consultor</h3><div class="chart-container"><canvas id="chart-consultores"></canvas></div></div>
                 <div class="bg-white p-4 rounded-xl border border-slate-200/80"><h3 class="font-bold text-slate-700 text-xs mb-2">Por Status</h3><div class="chart-container flex items-center justify-center"><canvas id="chart-status" style="max-width:220px;"></canvas></div></div>
@@ -157,7 +229,6 @@
                 <div class="bg-white p-4 rounded-xl border border-slate-200/80"><h3 class="font-bold text-slate-700 text-xs mb-2">Evolução Diária</h3><div class="chart-container"><canvas id="chart-evolucao"></canvas></div></div>
             </div>
 
-            <!-- TABLE -->
             <div class="bg-white rounded-xl border border-slate-200/80 overflow-hidden">
                 <div class="p-4 bg-slate-50 flex justify-between items-center"><h3 class="font-bold text-slate-700 text-sm">Histórico Detalhado</h3><span id="table-row-count" class="text-xs bg-teal-50 text-teal-700 font-bold px-2 py-0.5 rounded-md">0</span></div>
                 <div class="overflow-x-auto scroll-touch">
@@ -171,7 +242,7 @@
     </div>
 
     <script>
-        // ⚠️ SUA URL DO GOOGLE SCRIPT CONFIGURADA CORRETAMENTE:
+        // ⚠️ SUA URL DEFINITIVA DO GOOGLE SCRIPT ESTÁ AQUI
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyf3Y5lvdPzUDwcvB6FNP5hkL3C6r0SNh9jXqw-DZiQYPgwFU3iH2deNn2xws42sQlL/exec";
 
         let dadosTratados = [];
@@ -179,6 +250,7 @@
         const BASE_ACESSOS = { "Claudia": "2021", "Fabio": "3031", "Maicon": "4041", "Adm": "9999" };
         let usuarioLogado = "";
 
+        // ===== SISTEMA DE LOGIN =====
         function deslogarUsuario() {
             usuarioLogado = "";
             document.getElementById("loginPin").value = "";
@@ -215,15 +287,60 @@
             }
         }
 
+        // ===== LÓGICA DO MODAL DE CADASTRO =====
+        function abrirModalNovo() {
+            document.getElementById('modal-novo').classList.remove('hidden');
+            document.getElementById('form-novo').reset();
+            document.getElementById('novo-data').valueAsDate = new Date();
+            const campoConsultor = document.getElementById('novo-consultor');
+            if (usuarioLogado === "Claudia" || usuarioLogado === "Maicon") {
+                campoConsultor.value = usuarioLogado;
+                campoConsultor.disabled = true;
+            } else {
+                campoConsultor.disabled = false;
+            }
+        }
+
+        function fecharModalNovo() { document.getElementById('modal-novo').classList.add('hidden'); }
+
+        function salvarNovoAtendimento(event) {
+            event.preventDefault();
+            const btnSalvar = document.getElementById('btn-salvar-novo');
+            btnSalvar.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando na Planilha...';
+            btnSalvar.disabled = true;
+            const consultorDefinitivo = document.getElementById('novo-consultor').disabled ? usuarioLogado : document.getElementById('novo-consultor').value;
+            
+            const payload = {
+                data: document.getElementById('novo-data').value,
+                nome: document.getElementById('novo-nome').value,
+                telefone: document.getElementById('novo-telefone').value,
+                canal: document.getElementById('novo-canal').value,
+                consultor: consultorDefinitivo,
+                orcamento: document.getElementById('novo-orcamento').value,
+                status: document.getElementById('novo-status').value,
+                motivo: document.getElementById('novo-motivo').value
+            };
+
+            fetch(SCRIPT_URL, {
+                method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+            }).then(() => {
+                fecharModalNovo();
+                btnSalvar.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Salvar Atendimento';
+                btnSalvar.disabled = false;
+                setTimeout(() => { carregarDadosDoServidor(); }, 1500); 
+            }).catch(err => {
+                alert("Erro ao salvar! Verifique sua conexão.");
+                btnSalvar.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Salvar Atendimento';
+                btnSalvar.disabled = false;
+            });
+        }
+
+        // ===== INICIALIZAÇÃO E COMUNICAÇÃO =====
         document.addEventListener("DOMContentLoaded", () => {
             configurarDatasPadrao();
             carregarDadosDoServidor();
             const wrapper = document.getElementById('content-wrapper');
-            if (wrapper) {
-                wrapper.addEventListener('touchstart', () => {
-                    if (wrapper.scrollTop === 0) wrapper.scrollTop = 1;
-                }, { passive: true });
-            }
+            if (wrapper) { wrapper.addEventListener('touchstart', () => { if (wrapper.scrollTop === 0) wrapper.scrollTop = 1; }, { passive: true }); }
         });
 
         function configurarDatasPadrao() {
@@ -232,56 +349,43 @@
             document.getElementById("filter-date-end").value = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() + 1).toISOString().split('T')[0];
         }
 
-        // PONTE JSONP CONTRA BLOQUEIO DE CORS
         function carregarDadosDoServidor() {
             window.handleGoogleData = function(data) {
                 document.getElementById("banner-erro").classList.add("hidden");
                 inicializarDashboard(data);
                 document.getElementById('jsonp-bridge')?.remove();
             };
-
             const script = document.createElement('script');
             script.id = 'jsonp-bridge';
             script.src = SCRIPT_URL + "?callback=handleGoogleData";
-            script.onerror = function() {
-                document.getElementById("banner-erro").classList.remove("hidden");
-            };
+            script.onerror = function() { document.getElementById("banner-erro").classList.remove("hidden"); };
             document.body.appendChild(script);
         }
 
-        // TRATAMENTO DE MATRIZ E NORMALIZAÇÃO DE DATAS SÊNIOR
-        // TRATAMENTO DE MATRIZ ALINHADO COM A PLANILHA REAL
+        // ===== TRATAMENTO DE MATRIZ E MAPEAMENTO =====
         function inicializarDashboard(rows) {
             if (!rows || rows.length < 2) return;
-
-            // Mapeamento inteligente por cabeçalho real da imagem
             const cabeçalhos = rows[0].map(c => String(c).trim().toLowerCase());
             const idxData = cabeçalhos.findIndex(h => h.includes("data"));
             const idxNome = cabeçalhos.findIndex(h => h.includes("nome"));
-            const idxCanal = cabeçalhos.findIndex(h => h.includes("canal"));
+            const idxCanal = cabeçalhos.findIndex(h => h.includes("canal") || h.includes("origem"));
             const idxConsultor = cabeçalhos.findIndex(h => h.includes("consultor"));
             const idxOrcamento = cabeçalhos.findIndex(h => h.includes("orçamento") || h.includes("orca"));
             const idxStatus = cabeçalhos.findIndex(h => h.includes("status"));
 
             dadosTratados = [];
-
             for (let i = 1; i < rows.length; i++) {
                 const colunas = rows[i];
                 let dataRaw = idxData !== -1 ? colunas[idxData] : colunas[0];
                 let nomeRaw = idxNome !== -1 ? colunas[idxNome] : colunas[1];
-                
                 if (!dataRaw || !nomeRaw || dataRaw === "") continue;
 
-                // Tradutor de datas padrão para o calendário
                 let dataFormatada = String(dataRaw).trim();
                 if (dataFormatada.includes("/")) {
                     const partes = dataFormatada.split("/");
-                    if (partes.length === 3) {
-                        dataFormatada = `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
-                    }
+                    if (partes.length === 3) dataFormatada = `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
                 }
 
-                // Captura cirúrgica das posições da planilha mapeada
                 dadosTratados.push({
                     data: dataFormatada,
                     nome: String(nomeRaw),
@@ -292,11 +396,9 @@
                 });
             }
 
-            // Remove e reaplica os ouvintes de filtros
             document.getElementById("filter-date-start").removeEventListener("change", processarEAtualizarDashboardCompleto);
             document.getElementById("filter-date-end").removeEventListener("change", processarEAtualizarDashboardCompleto);
             document.getElementById("filter-consultant").removeEventListener("change", processarEAtualizarDashboardCompleto);
-            
             document.getElementById("filter-date-start").addEventListener("change", processarEAtualizarDashboardCompleto);
             document.getElementById("filter-date-end").addEventListener("change", processarEAtualizarDashboardCompleto);
             document.getElementById("filter-consultant").addEventListener("change", processarEAtualizarDashboardCompleto);
@@ -305,6 +407,7 @@
             if (usuarioLogado !== "") processarEAtualizarDashboardCompleto();
         }
 
+        // ===== PROCESSAMENTO E RENDERIZAÇÃO =====
         function processarEAtualizarDashboardCompleto() {
             if (usuarioLogado === "") return;
             const start = document.getElementById("filter-date-start").value;
@@ -325,20 +428,14 @@
             const tbody = document.getElementById("table-body");
             tbody.innerHTML = "";
             document.getElementById("table-row-count").innerText = dados.length;
-            
             if (dados.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="px-4 py-4 text-center text-slate-400 italic">Nenhum registro localizado neste período.</td></tr>`;
-                return;
+                tbody.innerHTML = `<tr><td colspan="6" class="px-4 py-4 text-center text-slate-400 italic">Nenhum registro localizado.</td></tr>`; return;
             }
-
             dados.forEach(item => {
                 const tr = document.createElement("tr");
                 let stClass = "bg-blue-50 text-blue-700 border border-blue-100";
                 if(item.status.includes("Concluído") || item.status.includes("Finalizado") || item.status.includes("Aguardando")) stClass = "bg-emerald-50 text-emerald-700 border border-emerald-100";
-                
-                // Exibe na tabela de volta para o formato DD/MM/YYYY amigável
                 const dataExibicao = item.data.split("-").reverse().join("/");
-                
                 tr.innerHTML = `<td class="px-4 py-2 text-slate-500">${dataExibicao}</td><td class="px-4 py-2 font-bold">${item.nome}</td><td class="px-4 py-2">${item.canal}</td><td class="px-4 py-2">${item.consultor}</td><td class="px-4 py-2 text-center">${item.orcamento}</td><td class="px-4 py-2 text-center"><span class="px-2 py-0.5 rounded-full ${stClass}">${item.status}</span></td>`;
                 tbody.appendChild(tr);
             });
@@ -353,65 +450,33 @@
             document.getElementById("kpi-taxa-conclusao").innerText = `${dados.length > 0 ? Math.round((conc / dados.length) * 100) : 0}%`;
         }
 
-        // RENDERIZAÇÃO DE GRÁFICOS COMPATÍVEL COM TOUCH SCREEN MOBILE
         function renderizarGraficos(dados) {
             const cCons = {}, cStat = {}, cCan = {}, cData = {};
-            
             dados.forEach(d => { 
-                // Padroniza o texto para evitar quebras por espaços ou maiúsculas/minúsculas
-                const consultorNome = d.consultor ? String(d.consultor).trim() : "Sem Consultor";
-                const statusNome = d.status ? String(d.status).trim() : "Em Atendimento";
-                const canalNome = d.canal ? String(d.canal).trim() : "Não Informado";
+                const consNome = d.consultor ? String(d.consultor).trim() : "Sem Consultor";
+                const statNome = d.status ? String(d.status).trim() : "Em Atendimento";
+                const canNome = d.canal ? String(d.canal).trim() : "Não Informado";
                 const dataDia = d.data ? String(d.data).trim() : "Sem Data";
-
-                cCons[consultorNome] = (cCons[consultorNome] || 0) + 1; 
-                cStat[statusNome] = (cStat[statusNome] || 0) + 1; 
-                cCan[canalNome] = (cCan[canalNome] || 0) + 1; 
+                cCons[consNome] = (cCons[consNome] || 0) + 1; 
+                cStat[statNome] = (cStat[statNome] || 0) + 1; 
+                cCan[canNome] = (cCan[canNome] || 0) + 1; 
                 cData[dataDia] = (cData[dataDia] || 0) + 1; 
             });
 
-            const opt = { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                plugins: { legend: false },
-                scales: {
-                    y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 10 } } },
-                    x: { ticks: { font: { size: 10 } } }
-                }
-            };
+            const opt = { responsive: true, maintainAspectRatio: false, plugins: { legend: false }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 10 } } }, x: { ticks: { font: { size: 10 } } } } };
 
-            // 1. Gráfico de Consultores
             if (chartConsultoresInstance) chartConsultoresInstance.destroy();
-            chartConsultoresInstance = new Chart(document.getElementById('chart-consultores').getContext('2d'), { 
-                type: 'bar', 
-                data: { labels: Object.keys(cCons), datasets: [{ data: Object.values(cCons), backgroundColor: '#3b82f6', borderRadius: 4 }] }, 
-                options: opt 
-            });
+            chartConsultoresInstance = new Chart(document.getElementById('chart-consultores').getContext('2d'), { type: 'bar', data: { labels: Object.keys(cCons), datasets: [{ data: Object.values(cCons), backgroundColor: '#3b82f6', borderRadius: 4 }] }, options: opt });
             
-            // 2. Gráfico de Status (Rosca)
             if (chartStatusInstance) chartStatusInstance.destroy();
-            chartStatusInstance = new Chart(document.getElementById('chart-status').getContext('2d'), { 
-                type: 'doughnut', 
-                data: { labels: Object.keys(cStat), datasets: [{ data: Object.values(cStat), backgroundColor: ['#10b981', '#3b82f6', '#ef4444', '#f59e0b', '#64748b'] }] }, 
-                options: { cutout: '65%', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } } } 
-            });
+            chartStatusInstance = new Chart(document.getElementById('chart-status').getContext('2d'), { type: 'doughnut', data: { labels: Object.keys(cStat), datasets: [{ data: Object.values(cStat), backgroundColor: ['#10b981', '#3b82f6', '#ef4444', '#f59e0b', '#64748b'] }] }, options: { cutout: '65%', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } } } });
             
-            // 3. Gráfico de Canais (🚨 CORRIGIDO: Transformado em barras verticais estáveis para Mobile)
             if (chartCanaisInstance) chartCanaisInstance.destroy();
-            chartCanaisInstance = new Chart(document.getElementById('chart-canais').getContext('2d'), { 
-                type: 'bar', 
-                data: { labels: Object.keys(cCan), datasets: [{ data: Object.values(cCan), backgroundColor: '#0f766e', borderRadius: 4 }] }, 
-                options: opt 
-            });
+            chartCanaisInstance = new Chart(document.getElementById('chart-canais').getContext('2d'), { type: 'bar', data: { labels: Object.keys(cCan), datasets: [{ data: Object.values(cCan), backgroundColor: '#0f766e', borderRadius: 4 }] }, options: opt });
             
-            // 4. Gráfico de Evolução Diária
             const dOrd = Object.keys(cData).sort();
             if (chartEvolucaoInstance) chartEvolucaoInstance.destroy();
-            chartEvolucaoInstance = new Chart(document.getElementById('chart-evolucao').getContext('2d'), { 
-                type: 'line', 
-                data: { labels: dOrd.map(d => d.split("-").slice(1,3).reverse().join("/")), datasets: [{ data: dOrd.map(d => cData[d]), borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.2 }] }, 
-                options: opt 
-            });
+            chartEvolucaoInstance = new Chart(document.getElementById('chart-evolucao').getContext('2d'), { type: 'line', data: { labels: dOrd.map(d => d.split("-").slice(1,3).reverse().join("/")), datasets: [{ data: dOrd.map(d => cData[d]), borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.2 }] }, options: opt });
         }
     </script>
 </body>

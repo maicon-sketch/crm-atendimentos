@@ -8,13 +8,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="CRM Atendimentos">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="CRM Atendimentos">
     <meta name="theme-color" content="#0f172a"> 
     
-    <link rel="apple-touch-icon" href="https://i.postimg.cc/2SvFrtpx/Gemini-Generated-Image-2qs3k22qs3k22qs3.png">
-    <link rel="icon" type="image/png" href="https://i.postimg.cc/2SvFrtpx/Gemini-Generated-Image-2qs3k22qs3k22qs3.png">
-
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -26,24 +21,14 @@
             font-family: 'Inter', sans-serif; 
             background-color: #f8fafc; 
             margin: 0; padding: 0;
-            width: 100%; height: 100%;
-            position: fixed; 
-            overflow: hidden !important; 
             -webkit-tap-highlight-color: transparent;
         }
         
-        #content-wrapper {
-            height: 100%; width: 100%;
-            overflow-y: scroll !important;
-            -webkit-overflow-scrolling: touch;
-            overscroll-behavior-y: contain !important; 
-        }
-        
         .chart-container { position: relative; height: 260px; width: 100%; }
-        .scroll-touch { -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; overscroll-behavior-y: contain !important; }
+        .scroll-touch { -webkit-overflow-scrolling: touch; }
     </style>
 </head>
-<body class="text-slate-800 antialiased relative select-none md:select-text">
+<body class="text-slate-800 antialiased relative md:select-text">
 
     <div id="tela-login" class="fixed inset-0 bg-slate-900/90 backdrop-blur-md flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-sm p-6 space-y-4">
@@ -52,7 +37,7 @@
                     <i class="fa-solid fa-lock text-lg"></i>
                 </div>
                 <h2 class="text-lg font-bold text-slate-800 tracking-tight">Identificação do Consultor</h2>
-                <p class="text-xs text-slate-400">Insira suas credenciais para acessar o painel</p>
+                <p class="text-xs text-slate-400">Insira suas credenciais para acessar</p>
             </div>
             
             <div id="login-erro" class="bg-rose-50 text-rose-700 border border-rose-200 text-xs font-bold p-3 rounded-xl text-center hidden">
@@ -62,20 +47,20 @@
             <form id="formLogin" class="space-y-3.5" onsubmit="autenticarUsuario(event)">
                 <div>
                     <label class="block text-xs font-bold uppercase text-slate-400 mb-1 tracking-wide">Usuário</label>
-                    <select id="loginUsuario" required class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:outline-none focus:border-teal-500 focus:bg-white min-h-[46px]">
+                    <select id="loginUsuario" required class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:outline-none focus:border-teal-500 min-h-[46px]">
                         <option value="">Selecione seu nome...</option>
                         <option value="Claudia">Claudia</option>
                         <option value="Fabio">Fabio</option>
                         <option value="Maicon">Maicon</option>
-                        <option value="Adm">Administrador (Geral)</option>
+                        <option value="Adm">Administrador</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold uppercase text-slate-400 mb-1 tracking-wide">PIN de Acesso (4 dígitos)</label>
+                    <label class="block text-xs font-bold uppercase text-slate-400 mb-1 tracking-wide">PIN (4 dígitos)</label>
                     <input type="password" id="loginPin" required maxlength="4" placeholder="••••" pattern="\d*" inputmode="numeric"
-                           class="w-full text-center text-lg tracking-widest bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:border-teal-500 focus:bg-white min-h-[46px]">
+                           class="w-full text-center text-lg tracking-widest bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:border-teal-500 min-h-[46px]">
                 </div>
-                <button type="submit" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 rounded-xl text-sm shadow-md cursor-pointer transition-colors min-h-[46px]">
+                <button type="submit" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 rounded-xl text-sm shadow-md transition-colors min-h-[46px]">
                     <i class="fa-solid fa-right-to-bracket mr-1"></i> Entrar no Painel
                 </button>
             </form>
@@ -85,13 +70,13 @@
     <div id="modal-novo" class="fixed inset-0 bg-slate-900/90 backdrop-blur-sm flex items-center justify-center z-50 p-4 hidden">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md flex flex-col max-h-[90vh] overflow-hidden">
             <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2"><i class="fa-solid fa-user-plus text-teal-600"></i> Novo Atendimento</h3>
-                <button onclick="fecharModalNovo()" class="text-slate-400 hover:text-rose-500 transition-colors w-8 h-8 flex items-center justify-center rounded-full bg-slate-200/50">
+                <h3 id="modal-titulo" class="font-bold text-slate-800 text-lg flex items-center gap-2"><i class="fa-solid fa-file-pen text-teal-600"></i> Ficha do Atendimento</h3>
+                <button type="button" onclick="fecharModalNovo()" class="text-slate-400 hover:text-rose-500 transition-colors w-8 h-8 flex items-center justify-center rounded-full bg-slate-200/50">
                     <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
             </div>
             
-            <div class="p-5 overflow-y-auto scroll-touch">
+            <div class="p-5 overflow-y-auto">
                 <form id="form-novo" class="space-y-4" onsubmit="salvarNovoAtendimento(event)">
                     <div class="grid grid-cols-2 gap-3">
                         <div>
@@ -107,18 +92,16 @@
                             </select>
                         </div>
                     </div>
-
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nome do Cliente</label>
-                            <input type="text" id="novo-nome" required placeholder="Ex: João Silva" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:border-teal-500 outline-none">
+                            <input type="text" id="novo-nome" required class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:border-teal-500 outline-none">
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Telefone</label>
-                            <input type="tel" id="novo-telefone" placeholder="(11) 99999-9999" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:border-teal-500 outline-none">
+                            <input type="tel" id="novo-telefone" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:border-teal-500 outline-none">
                         </div>
                     </div>
-
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Canal</label>
@@ -138,7 +121,6 @@
                             </select>
                         </div>
                     </div>
-
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Status</label>
@@ -151,10 +133,9 @@
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Motivo</label>
-                            <input type="text" id="novo-motivo" placeholder="Opcional" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:border-teal-500 outline-none">
+                            <input type="text" id="novo-motivo" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:border-teal-500 outline-none">
                         </div>
                     </div>
-
                     <div class="pt-2">
                         <button type="submit" id="btn-salvar-novo" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3.5 rounded-xl text-sm shadow-md transition-colors active:scale-95 duration-100 flex items-center justify-center gap-2">
                             <i class="fa-solid fa-cloud-arrow-up"></i> Salvar Atendimento
@@ -165,12 +146,11 @@
         </div>
     </div>
 
-    <div id="banner-erro" class="bg-rose-600 text-white px-4 py-3 text-center text-xs font-bold hidden sticky top-0 z-50 shadow-md flex items-center justify-center gap-2">
-        <i class="fa-solid fa-triangle-exclamation text-base animate-bounce"></i>
-        <span id="mensagem-erro">Aviso: Erro de sincronização com o banco de dados.</span>
+    <div id="banner-erro" class="bg-rose-600 text-white px-4 py-3 text-center text-xs font-bold hidden sticky top-0 z-50 shadow-md">
+        <i class="fa-solid fa-triangle-exclamation mr-1"></i> Falha ao conectar. Atualizando...
     </div>
 
-    <div id="content-wrapper">
+    <div>
         <header class="bg-slate-900 text-white shadow-md sticky top-0 z-40">
             <div class="max-w-7xl mx-auto px-4 py-3.5 flex flex-col sm:flex-row justify-between items-center gap-3">
                 <div class="flex items-center gap-3 w-full sm:w-auto">
@@ -184,10 +164,10 @@
                 </div>
                 
                 <div class="flex items-center gap-2 justify-between sm:justify-end w-full sm:w-auto border-t border-slate-800 pt-3 sm:pt-0 sm:border-none">
-                    <button onclick="abrirModalNovo()" class="bg-teal-500 active:bg-teal-600 text-slate-900 font-bold px-4 py-2 rounded-xl flex items-center justify-center gap-2 text-sm transition-colors shadow-md cursor-pointer active:scale-95 duration-100 flex-1 sm:flex-none min-h-[38px]">
+                    <button type="button" onclick="abrirModalNovo()" class="bg-teal-500 active:bg-teal-600 text-slate-900 font-bold px-4 py-2 rounded-xl flex items-center justify-center gap-2 text-sm shadow-md cursor-pointer active:scale-95 duration-100 flex-1 sm:flex-none min-h-[38px]">
                         <i class="fa-solid fa-plus text-base"></i> <span>Novo Atendimento</span>
                     </button>
-                    <button onclick="deslogarUsuario()" class="bg-rose-600 active:bg-rose-700 text-white font-bold w-[38px] h-[38px] rounded-xl flex items-center justify-center transition-colors shadow-md cursor-pointer active:scale-95 duration-100 shrink-0" title="Sair do Painel">
+                    <button type="button" onclick="deslogarUsuario()" class="bg-rose-600 active:bg-rose-700 text-white font-bold w-[38px] h-[38px] rounded-xl flex items-center justify-center shadow-md cursor-pointer active:scale-95 duration-100 shrink-0">
                         <i class="fa-solid fa-right-from-bracket text-sm"></i>
                     </button>
                 </div>
@@ -195,24 +175,24 @@
         </header>
 
         <main class="max-w-7xl mx-auto px-4 py-4 space-y-4">
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200/80 flex flex-col gap-3">
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200/80">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
                     <div>
                         <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Data Início</label>
-                        <input type="date" id="filter-date-start" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:border-teal-500">
+                        <input type="date" id="filter-date-start" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Data Fim</label>
-                        <input type="date" id="filter-date-end" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:border-teal-500">
+                        <input type="date" id="filter-date-end" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Consultor Geral</label>
-                        <select id="filter-consultant" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:border-teal-500">
-                            <option value="todos">Todos os Consultores</option>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Consultor</label>
+                        <select id="filter-consultant" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none">
+                            <option value="todos">Todos</option>
                         </select>
                     </div>
                 </div>
-                <button id="btn-reset-filters" class="w-full text-xs font-bold bg-slate-100 py-2.5 rounded-xl text-slate-600"><i class="fa-solid fa-arrow-rotate-left mr-1"></i> Limpar Filtros</button>
+                <button type="button" id="btn-reset-filters" class="w-full text-xs font-bold bg-slate-100 py-2.5 rounded-xl text-slate-600"><i class="fa-solid fa-arrow-rotate-left mr-1"></i> Limpar Filtros</button>
             </div>
 
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -233,7 +213,7 @@
                 <div class="p-4 bg-slate-50 flex justify-between items-center"><h3 class="font-bold text-slate-700 text-sm">Histórico Detalhado</h3><span id="table-row-count" class="text-xs bg-teal-50 text-teal-700 font-bold px-2 py-0.5 rounded-md">0</span></div>
                 <div class="overflow-x-auto scroll-touch">
                     <table class="w-full text-left text-xs">
-                        <thead><tr class="bg-slate-100 text-slate-500 font-bold uppercase"><th class="px-4 py-3">Data</th><th class="px-4 py-3">Cliente</th><th class="px-4 py-3">Canal</th><th class="px-4 py-3">Consultor</th><th class="px-4 py-3 text-center">Orç.</th><th class="px-4 py-3 text-center">Status</th></tr></thead>
+                        <thead><tr class="bg-slate-100 text-slate-500 font-bold uppercase"><th class="px-4 py-3">Data</th><th class="px-4 py-3">Cliente</th><th class="px-4 py-3">Canal</th><th class="px-4 py-3">Consultor</th><th class="px-4 py-3 text-center">Status</th><th class="px-4 py-3 text-center">Ações</th></tr></thead>
                         <tbody id="table-body" class="divide-y divide-slate-100"></tbody>
                     </table>
                 </div>
@@ -242,19 +222,17 @@
     </div>
 
     <script>
-        // ⚠️ SUA URL DEFINITIVA DO GOOGLE SCRIPT ESTÁ AQUI
+        // ⚠️ SUA URL DEFINITIVA AQUI:
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyf3Y5lvdPzUDwcvB6FNP5hkL3C6r0SNh9jXqw-DZiQYPgwFU3iH2deNn2xws42sQlL/exec";
 
         let dadosTratados = [];
+        let linhaEmEdicao = null; // Guarda a linha sendo editada
         let chartConsultoresInstance, chartStatusInstance, chartCanaisInstance, chartEvolucaoInstance;
         const BASE_ACESSOS = { "Claudia": "2021", "Fabio": "3031", "Maicon": "4041", "Adm": "9999" };
         let usuarioLogado = "";
 
-        // ===== SISTEMA DE LOGIN =====
         function deslogarUsuario() {
             usuarioLogado = "";
-            document.getElementById("loginPin").value = "";
-            document.getElementById("usuario-logado-badge").innerText = "-";
             document.getElementById("tela-login").classList.remove("hidden");
             document.getElementById("formLogin").reset();
         }
@@ -267,31 +245,29 @@
                 usuarioLogado = usr;
                 document.getElementById("usuario-logado-badge").innerText = usr;
                 document.getElementById("tela-login").classList.add("hidden");
-                configurarAcessosPorNivelDePerfil();
+                
+                const select = document.getElementById("filter-consultant");
+                if (usuarioLogado === "Claudia" || usuarioLogado === "Maicon") {
+                    select.innerHTML = `<option value="${usuarioLogado}">${usuarioLogado}</option>`;
+                    select.disabled = true;
+                } else {
+                    select.disabled = false;
+                    select.innerHTML = '<option value="todos">Todos</option>';
+                    ["Claudia", "Fabio", "Maicon"].forEach(c => select.innerHTML += `<option value="${c}">${c}</option>`);
+                }
                 processarEAtualizarDashboardCompleto();
             } else {
                 document.getElementById("login-erro").classList.remove("hidden");
-                document.getElementById("loginPin").value = "";
             }
         }
 
-        function configurarAcessosPorNivelDePerfil() {
-            const select = document.getElementById("filter-consultant");
-            if (usuarioLogado === "Claudia" || usuarioLogado === "Maicon") {
-                select.innerHTML = `<option value="${usuarioLogado}">${usuarioLogado}</option>`;
-                select.disabled = true;
-            } else {
-                select.disabled = false;
-                select.innerHTML = '<option value="todos">Todos os Consultores</option>';
-                ["Claudia", "Fabio", "Maicon"].forEach(c => select.innerHTML += `<option value="${c}">${c}</option>`);
-            }
-        }
-
-        // ===== LÓGICA DO MODAL DE CADASTRO =====
+        // ===== MODAL E EDIÇÃO =====
         function abrirModalNovo() {
+            linhaEmEdicao = null;
             document.getElementById('modal-novo').classList.remove('hidden');
             document.getElementById('form-novo').reset();
             document.getElementById('novo-data').valueAsDate = new Date();
+            
             const campoConsultor = document.getElementById('novo-consultor');
             if (usuarioLogado === "Claudia" || usuarioLogado === "Maicon") {
                 campoConsultor.value = usuarioLogado;
@@ -299,6 +275,37 @@
             } else {
                 campoConsultor.disabled = false;
             }
+            document.getElementById('btn-salvar-novo').innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Salvar Atendimento';
+        }
+
+        function editarAtendimento(rowId) {
+            const atendimento = dadosTratados.find(d => d.row === rowId);
+            if(!atendimento) return;
+
+            linhaEmEdicao = rowId;
+            document.getElementById('modal-novo').classList.remove('hidden');
+
+            document.getElementById('novo-data').value = atendimento.data;
+            document.getElementById('novo-nome').value = atendimento.nome;
+            document.getElementById('novo-telefone').value = atendimento.telefone;
+            
+            // Corrige canais que vieram nulos/errados para "Outros" no seletor
+            const campoCanal = document.getElementById('novo-canal');
+            campoCanal.value = Array.from(campoCanal.options).some(o => o.value === atendimento.canal) ? atendimento.canal : "Outros";
+
+            const campoConsultor = document.getElementById('novo-consultor');
+            campoConsultor.value = atendimento.consultor;
+            if (usuarioLogado === "Claudia" || usuarioLogado === "Maicon") {
+                campoConsultor.disabled = true;
+            } else {
+                campoConsultor.disabled = false;
+            }
+
+            document.getElementById('novo-orcamento').value = atendimento.orcamento === "Sim" ? "Sim" : "Não";
+            document.getElementById('novo-status').value = atendimento.status;
+            document.getElementById('novo-motivo').value = atendimento.motivo;
+
+            document.getElementById('btn-salvar-novo').innerHTML = '<i class="fa-solid fa-pen-to-square"></i> Atualizar Atendimento';
         }
 
         function fecharModalNovo() { document.getElementById('modal-novo').classList.add('hidden'); }
@@ -306,11 +313,13 @@
         function salvarNovoAtendimento(event) {
             event.preventDefault();
             const btnSalvar = document.getElementById('btn-salvar-novo');
-            btnSalvar.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando na Planilha...';
+            btnSalvar.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
             btnSalvar.disabled = true;
+            
             const consultorDefinitivo = document.getElementById('novo-consultor').disabled ? usuarioLogado : document.getElementById('novo-consultor').value;
             
             const payload = {
+                row: linhaEmEdicao, // Passa a linha para o Google saber que é Edição
                 data: document.getElementById('novo-data').value,
                 nome: document.getElementById('novo-nome').value,
                 telefone: document.getElementById('novo-telefone').value,
@@ -325,29 +334,21 @@
                 method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
             }).then(() => {
                 fecharModalNovo();
-                btnSalvar.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Salvar Atendimento';
                 btnSalvar.disabled = false;
                 setTimeout(() => { carregarDadosDoServidor(); }, 1500); 
             }).catch(err => {
-                alert("Erro ao salvar! Verifique sua conexão.");
-                btnSalvar.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Salvar Atendimento';
+                alert("Erro de Conexão!");
                 btnSalvar.disabled = false;
             });
         }
 
-        // ===== INICIALIZAÇÃO E COMUNICAÇÃO =====
+        // ===== PROCESSAMENTO =====
         document.addEventListener("DOMContentLoaded", () => {
-            configurarDatasPadrao();
-            carregarDadosDoServidor();
-            const wrapper = document.getElementById('content-wrapper');
-            if (wrapper) { wrapper.addEventListener('touchstart', () => { if (wrapper.scrollTop === 0) wrapper.scrollTop = 1; }, { passive: true }); }
-        });
-
-        function configurarDatasPadrao() {
             const hoje = new Date();
             document.getElementById("filter-date-start").value = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().split('T')[0];
             document.getElementById("filter-date-end").value = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() + 1).toISOString().split('T')[0];
-        }
+            carregarDadosDoServidor();
+        });
 
         function carregarDadosDoServidor() {
             window.handleGoogleData = function(data) {
@@ -358,56 +359,56 @@
             const script = document.createElement('script');
             script.id = 'jsonp-bridge';
             script.src = SCRIPT_URL + "?callback=handleGoogleData";
-            script.onerror = function() { document.getElementById("banner-erro").classList.remove("hidden"); };
+            script.onerror = () => document.getElementById("banner-erro").classList.remove("hidden");
             document.body.appendChild(script);
         }
 
-        // ===== TRATAMENTO DE MATRIZ E MAPEAMENTO =====
         function inicializarDashboard(rows) {
             if (!rows || rows.length < 2) return;
-            const cabeçalhos = rows[0].map(c => String(c).trim().toLowerCase());
-            const idxData = cabeçalhos.findIndex(h => h.includes("data"));
-            const idxNome = cabeçalhos.findIndex(h => h.includes("nome"));
-            const idxCanal = cabeçalhos.findIndex(h => h.includes("canal") || h.includes("origem"));
-            const idxConsultor = cabeçalhos.findIndex(h => h.includes("consultor"));
-            const idxOrcamento = cabeçalhos.findIndex(h => h.includes("orçamento") || h.includes("orca"));
-            const idxStatus = cabeçalhos.findIndex(h => h.includes("status"));
+            const cab = rows[0].map(c => String(c).trim().toLowerCase());
+            
+            // Pega TODAS as colunas para a edição funcionar perfeitamente
+            const iDat = cab.findIndex(h => h.includes("data"));
+            const iNom = cab.findIndex(h => h.includes("nome"));
+            const iTel = cab.findIndex(h => h.includes("telefone") || h.includes("tel"));
+            const iCan = cab.findIndex(h => h.includes("canal"));
+            const iCon = cab.findIndex(h => h.includes("consultor"));
+            const iOrc = cab.findIndex(h => h.includes("orca") || h.includes("orça"));
+            const iSta = cab.findIndex(h => h.includes("status"));
+            const iMot = cab.findIndex(h => h.includes("motivo") || h.includes("obs"));
 
             dadosTratados = [];
             for (let i = 1; i < rows.length; i++) {
-                const colunas = rows[i];
-                let dataRaw = idxData !== -1 ? colunas[idxData] : colunas[0];
-                let nomeRaw = idxNome !== -1 ? colunas[idxNome] : colunas[1];
-                if (!dataRaw || !nomeRaw || dataRaw === "") continue;
+                const col = rows[i];
+                if (!col[0] || col[0] === "") continue;
 
-                let dataFormatada = String(dataRaw).trim();
-                if (dataFormatada.includes("/")) {
-                    const partes = dataFormatada.split("/");
-                    if (partes.length === 3) dataFormatada = `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
+                let dataForm = String(iDat !== -1 ? col[iDat] : col[0]).trim();
+                if (dataForm.includes("/")) {
+                    const p = dataForm.split("/");
+                    if (p.length === 3) dataForm = `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
                 }
 
                 dadosTratados.push({
-                    data: dataFormatada,
-                    nome: String(nomeRaw),
-                    canal: (idxCanal !== -1 && colunas[idxCanal] && colunas[idxCanal] !== "") ? String(colunas[idxCanal]).trim() : "Não Informado",
-                    consultor: (idxConsultor !== -1 && colunas[idxConsultor]) ? String(colunas[idxConsultor]).trim() : "Sem Consultor",
-                    orcamento: (idxOrcamento !== -1 && colunas[idxOrcamento]) ? String(colunas[idxOrcamento]).trim() : "Não",
-                    status: (idxStatus !== -1 && colunas[idxStatus]) ? String(colunas[idxStatus]).trim() : "Em Atendimento"
+                    row: i + 1, // <- ISSO É O QUE IDENTIFICA A LINHA NO GOOGLE PARA A EDIÇÃO!
+                    data: dataForm,
+                    nome: String(iNom !== -1 ? col[iNom] : col[1]),
+                    telefone: iTel !== -1 ? String(col[iTel]) : "",
+                    canal: (iCan !== -1 && col[iCan]) ? String(col[iCan]).trim() : "Não Informado",
+                    consultor: (iCon !== -1 && col[iCon]) ? String(col[iCon]).trim() : "Sem Consultor",
+                    orcamento: (iOrc !== -1 && col[iOrc]) ? String(col[iOrc]).trim() : "Não",
+                    status: (iSta !== -1 && col[iSta]) ? String(col[iSta]).trim() : "Em Atendimento",
+                    motivo: iMot !== -1 ? String(col[iMot]) : ""
                 });
             }
 
-            document.getElementById("filter-date-start").removeEventListener("change", processarEAtualizarDashboardCompleto);
-            document.getElementById("filter-date-end").removeEventListener("change", processarEAtualizarDashboardCompleto);
-            document.getElementById("filter-consultant").removeEventListener("change", processarEAtualizarDashboardCompleto);
-            document.getElementById("filter-date-start").addEventListener("change", processarEAtualizarDashboardCompleto);
-            document.getElementById("filter-date-end").addEventListener("change", processarEAtualizarDashboardCompleto);
-            document.getElementById("filter-consultant").addEventListener("change", processarEAtualizarDashboardCompleto);
-            document.getElementById("btn-reset-filters").onclick = () => { configurarDatasPadrao(); processarEAtualizarDashboardCompleto(); };
+            ["filter-date-start", "filter-date-end", "filter-consultant"].forEach(id => {
+                document.getElementById(id).removeEventListener("change", processarEAtualizarDashboardCompleto);
+                document.getElementById(id).addEventListener("change", processarEAtualizarDashboardCompleto);
+            });
             
             if (usuarioLogado !== "") processarEAtualizarDashboardCompleto();
         }
 
-        // ===== PROCESSAMENTO E RENDERIZAÇÃO =====
         function processarEAtualizarDashboardCompleto() {
             if (usuarioLogado === "") return;
             const start = document.getElementById("filter-date-start").value;
@@ -415,11 +416,13 @@
             let filterCons = document.getElementById("filter-consultant").value;
             if (usuarioLogado === "Claudia" || usuarioLogado === "Maicon") filterCons = usuarioLogado;
 
-            const filtrados = dadosTratados.filter(d => {
-                return (start ? d.data >= start : true) && (end ? d.data <= end : true) && (filterCons === "todos" ? true : d.consultor === filterCons);
-            });
+            const filtrados = dadosTratados.filter(d => (start ? d.data >= start : true) && (end ? d.data <= end : true) && (filterCons === "todos" ? true : d.consultor === filterCons));
 
-            atualizarKPIs(filtrados);
+            document.getElementById("kpi-total-atendimentos").innerText = filtrados.length;
+            document.getElementById("kpi-mes-atual").innerText = filtrados.length;
+            document.getElementById("kpi-orcamentos-enviados").innerText = filtrados.filter(d => d.orcamento.toLowerCase() === "sim").length;
+            document.getElementById("kpi-taxa-conclusao").innerText = `${filtrados.length > 0 ? Math.round((filtrados.filter(d => d.status.includes("Concluído") || d.status.includes("Finalizado")).length / filtrados.length) * 100) : 0}%`;
+
             renderizarTabela(filtrados);
             renderizarGraficos(filtrados);
         }
@@ -428,55 +431,54 @@
             const tbody = document.getElementById("table-body");
             tbody.innerHTML = "";
             document.getElementById("table-row-count").innerText = dados.length;
-            if (dados.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="px-4 py-4 text-center text-slate-400 italic">Nenhum registro localizado.</td></tr>`; return;
-            }
+            
             dados.forEach(item => {
                 const tr = document.createElement("tr");
-                let stClass = "bg-blue-50 text-blue-700 border border-blue-100";
-                if(item.status.includes("Concluído") || item.status.includes("Finalizado") || item.status.includes("Aguardando")) stClass = "bg-emerald-50 text-emerald-700 border border-emerald-100";
+                let stClass = "bg-blue-50 text-blue-700";
+                if(item.status.includes("Concluído")) stClass = "bg-emerald-50 text-emerald-700";
+                if(item.status.includes("Cancelado")) stClass = "bg-rose-50 text-rose-700";
+                
                 const dataExibicao = item.data.split("-").reverse().join("/");
-                tr.innerHTML = `<td class="px-4 py-2 text-slate-500">${dataExibicao}</td><td class="px-4 py-2 font-bold">${item.nome}</td><td class="px-4 py-2">${item.canal}</td><td class="px-4 py-2">${item.consultor}</td><td class="px-4 py-2 text-center">${item.orcamento}</td><td class="px-4 py-2 text-center"><span class="px-2 py-0.5 rounded-full ${stClass}">${item.status}</span></td>`;
+                
+                tr.innerHTML = `
+                    <td class="px-4 py-2 text-slate-500 whitespace-nowrap">${dataExibicao}</td>
+                    <td class="px-4 py-2 font-bold whitespace-nowrap">${item.nome}</td>
+                    <td class="px-4 py-2 whitespace-nowrap">${item.canal}</td>
+                    <td class="px-4 py-2 whitespace-nowrap">${item.consultor}</td>
+                    <td class="px-4 py-2 text-center whitespace-nowrap"><span class="px-2 py-0.5 rounded-full ${stClass}">${item.status}</span></td>
+                    <td class="px-4 py-2 text-center whitespace-nowrap">
+                        <button type="button" onclick="editarAtendimento(${item.row})" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg transition-colors cursor-pointer active:scale-95">
+                            <i class="fa-solid fa-pen text-[10px]"></i> Editar
+                        </button>
+                    </td>
+                `;
                 tbody.appendChild(tr);
             });
-        }
-
-        function atualizarKPIs(dados) {
-            document.getElementById("kpi-total-atendimentos").innerText = dados.length;
-            document.getElementById("kpi-mes-atual").innerText = dados.length;
-            const orc = dados.filter(d => d.orcamento.toLowerCase() === "sim").length;
-            document.getElementById("kpi-orcamentos-enviados").innerText = orc;
-            const conc = dados.filter(d => d.status.includes("Concluído") || d.status.includes("Finalizado")).length;
-            document.getElementById("kpi-taxa-conclusao").innerText = `${dados.length > 0 ? Math.round((conc / dados.length) * 100) : 0}%`;
         }
 
         function renderizarGraficos(dados) {
             const cCons = {}, cStat = {}, cCan = {}, cData = {};
             dados.forEach(d => { 
-                const consNome = d.consultor ? String(d.consultor).trim() : "Sem Consultor";
-                const statNome = d.status ? String(d.status).trim() : "Em Atendimento";
-                const canNome = d.canal ? String(d.canal).trim() : "Não Informado";
-                const dataDia = d.data ? String(d.data).trim() : "Sem Data";
-                cCons[consNome] = (cCons[consNome] || 0) + 1; 
-                cStat[statNome] = (cStat[statNome] || 0) + 1; 
-                cCan[canNome] = (cCan[canNome] || 0) + 1; 
-                cData[dataDia] = (cData[dataDia] || 0) + 1; 
+                cCons[d.consultor] = (cCons[d.consultor] || 0) + 1; 
+                cStat[d.status] = (cStat[d.status] || 0) + 1; 
+                cCan[d.canal] = (cCan[d.canal] || 0) + 1; 
+                cData[d.data] = (cData[d.data] || 0) + 1; 
             });
 
-            const opt = { responsive: true, maintainAspectRatio: false, plugins: { legend: false }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 10 } } }, x: { ticks: { font: { size: 10 } } } } };
+            const opt = { responsive: true, maintainAspectRatio: false, plugins: { legend: false } };
 
             if (chartConsultoresInstance) chartConsultoresInstance.destroy();
             chartConsultoresInstance = new Chart(document.getElementById('chart-consultores').getContext('2d'), { type: 'bar', data: { labels: Object.keys(cCons), datasets: [{ data: Object.values(cCons), backgroundColor: '#3b82f6', borderRadius: 4 }] }, options: opt });
             
             if (chartStatusInstance) chartStatusInstance.destroy();
-            chartStatusInstance = new Chart(document.getElementById('chart-status').getContext('2d'), { type: 'doughnut', data: { labels: Object.keys(cStat), datasets: [{ data: Object.values(cStat), backgroundColor: ['#10b981', '#3b82f6', '#ef4444', '#f59e0b', '#64748b'] }] }, options: { cutout: '65%', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } } } });
+            chartStatusInstance = new Chart(document.getElementById('chart-status').getContext('2d'), { type: 'doughnut', data: { labels: Object.keys(cStat), datasets: [{ data: Object.values(cStat), backgroundColor: ['#10b981', '#3b82f6', '#ef4444', '#f59e0b', '#64748b'] }] }, options: { cutout: '65%', ...opt } });
             
             if (chartCanaisInstance) chartCanaisInstance.destroy();
             chartCanaisInstance = new Chart(document.getElementById('chart-canais').getContext('2d'), { type: 'bar', data: { labels: Object.keys(cCan), datasets: [{ data: Object.values(cCan), backgroundColor: '#0f766e', borderRadius: 4 }] }, options: opt });
             
             const dOrd = Object.keys(cData).sort();
             if (chartEvolucaoInstance) chartEvolucaoInstance.destroy();
-            chartEvolucaoInstance = new Chart(document.getElementById('chart-evolucao').getContext('2d'), { type: 'line', data: { labels: dOrd.map(d => d.split("-").slice(1,3).reverse().join("/")), datasets: [{ data: dOrd.map(d => cData[d]), borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.2 }] }, options: opt });
+            chartEvolucaoInstance = new Chart(document.getElementById('chart-evolucao').getContext('2d'), { type: 'line', data: { labels: dOrd.map(d => d.split("-").slice(1,3).reverse().join("/")), datasets: [{ data: dOrd.map(d => cData[d]), borderColor: '#10b981', fill: false, tension: 0.2 }] }, options: opt });
         }
     </script>
 </body>

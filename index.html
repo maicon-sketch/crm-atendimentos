@@ -17,22 +17,21 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         
-        /* 🚨 CORREÇÃO 1: Rolagem livre restaurada para o PC e Mobile */
         html, body { 
             font-family: 'Inter', sans-serif; 
             background-color: #f8fafc; 
             margin: 0; padding: 0;
-            overscroll-behavior-y: none; /* Bloqueia só o "puxar para atualizar" nativo */
+            overscroll-behavior-y: none;
             -webkit-tap-highlight-color: transparent;
         }
         
         .chart-container { position: relative; height: 260px; width: 100%; }
         
-        /* 🚨 CORREÇÃO 2: Permite que a tabela role de lado sem travar a subida da página */
+        /* 🚨 DESTRAVAMENTO SÊNIOR: Permite deslizar de lado na tabela e rolar a página verticalmente sem travar */
         .table-container { 
             overflow-x: auto; 
             -webkit-overflow-scrolling: touch; 
-            touch-action: pan-x pan-y; 
+            touch-action: auto;
         }
     </style>
 </head>
@@ -194,7 +193,7 @@
                         <input type="date" id="filter-date-end" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Consultor</label>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Consultor Geral</label>
                         <select id="filter-consultant" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none">
                             <option value="todos">Todos</option>
                         </select>
@@ -218,10 +217,48 @@
             </div>
 
             <div class="bg-white rounded-xl border border-slate-200/80 overflow-hidden">
-                <div class="p-4 bg-slate-50 flex justify-between items-center"><h3 class="font-bold text-slate-700 text-sm">Histórico Detalhado</h3><span id="table-row-count" class="text-xs bg-teal-50 text-teal-700 font-bold px-2 py-0.5 rounded-md">0</span></div>
+                
+                <div class="p-4 bg-slate-50 border-b border-slate-100 space-y-3">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-slate-700 text-sm">Histórico Detalhado</h3>
+                        <span id="table-row-count" class="text-xs bg-teal-50 text-teal-700 font-bold px-2 py-0.5 rounded-md">0</span>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                                <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                            </span>
+                            <input type="text" id="table-search" placeholder="Buscar cliente por nome ou celular..." class="w-full text-xs bg-white border border-slate-200 rounded-xl pl-9 pr-3 py-2 outline-none focus:border-teal-500">
+                        </div>
+                        <div>
+                            <select id="table-filter-consultant" class="w-full text-xs bg-white border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-teal-500">
+                                <option value="todos">Todos os Consultores</option>
+                            </select>
+                        </div>
+                        <div>
+                            <select id="table-filter-status" class="w-full text-xs bg-white border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-teal-500">
+                                <option value="todos">Todos os Status</option>
+                                <option value="Em Atendimento">Em Atendimento</option>
+                                <option value="Aguardando">Aguardando</option>
+                                <option value="Concluído">Concluído</option>
+                                <option value="Cancelado">Cancelado</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="table-container">
                     <table class="w-full text-left text-xs">
-                        <thead><tr class="bg-slate-100 text-slate-500 font-bold uppercase"><th class="px-4 py-3">Data</th><th class="px-4 py-3 min-w-[150px]">Cliente</th><th class="px-4 py-3">Canal</th><th class="px-4 py-3">Consultor</th><th class="px-4 py-3 text-center">Status</th></tr></thead>
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-500 font-bold uppercase">
+                                <th class="px-4 py-3">Data</th>
+                                <th class="px-4 py-3 min-w-[140px]">Cliente</th>
+                                <th class="px-4 py-3">Telefone</th>
+                                <th class="px-4 py-3">Consultor</th>
+                                <th class="px-4 py-3 text-center">Status</th>
+                                <th class="px-4 py-3 text-center">Ações</th>
+                            </tr>
+                        </thead>
                         <tbody id="table-body" class="divide-y divide-slate-100"></tbody>
                     </table>
                 </div>
@@ -230,7 +267,6 @@
     </div>
 
     <script>
-        // ⚠️ SUA URL DEFINITIVA AQUI:
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyf3Y5lvdPzUDwcvB6FNP5hkL3C6r0SNh9jXqw-DZiQYPgwFU3iH2deNn2xws42sQlL/exec";
 
         let dadosTratados = [];
@@ -256,14 +292,21 @@
                 document.getElementById("usuario-logado-badge").innerText = usr;
                 document.getElementById("tela-login").classList.add("hidden");
                 
-                const select = document.getElementById("filter-consultant");
+                // Sincroniza as permissões de perfil nos drop-downs do topo e da tabela
+                const topSel = document.getElementById("filter-consultant");
+                const tabSel = document.getElementById("table-filter-consultant");
+                
                 if (usuarioLogado === "Claudia" || usuarioLogado === "Maicon") {
-                    select.innerHTML = `<option value="${usuarioLogado}">${usuarioLogado}</option>`;
-                    select.disabled = true;
+                    topSel.innerHTML = `<option value="${usuarioLogado}">${usuarioLogado}</option>`; topSel.disabled = true;
+                    tabSel.innerHTML = `<option value="${usuarioLogado}">${usuarioLogado}</option>`; tabSel.disabled = true;
                 } else {
-                    select.disabled = false;
-                    select.innerHTML = '<option value="todos">Todos</option>';
-                    ["Claudia", "Fabio", "Maicon"].forEach(c => select.innerHTML += `<option value="${c}">${c}</option>`);
+                    topSel.disabled = false; tabSel.disabled = false;
+                    topSel.innerHTML = '<option value="todos">Todos</option>';
+                    tabSel.innerHTML = '<option value="todos">Todos os Consultores</option>';
+                    ["Claudia", "Fabio", "Maicon"].forEach(c => {
+                        topSel.innerHTML += `<option value="${c}">${c}</option>`;
+                        tabSel.innerHTML += `<option value="${c}">${c}</option>`;
+                    });
                 }
                 processarEAtualizarDashboardCompleto();
             } else {
@@ -271,7 +314,7 @@
             }
         }
 
-        // ===== MODAL E EDIÇÃO =====
+        // ===== MODAL E CADASTRO =====
         function abrirModalNovo() {
             linhaEmEdicao = null;
             document.getElementById('modal-novo').classList.remove('hidden');
@@ -280,8 +323,7 @@
             
             const campoConsultor = document.getElementById('novo-consultor');
             if (usuarioLogado === "Claudia" || usuarioLogado === "Maicon") {
-                campoConsultor.value = usuarioLogado;
-                campoConsultor.disabled = true;
+                campoConsultor.value = usuarioLogado; campoConsultor.disabled = true;
             } else {
                 campoConsultor.disabled = false;
             }
@@ -347,7 +389,7 @@
             });
         }
 
-        // ===== PROCESSAMENTO =====
+        // ===== INFRAESTRUTURA DE DADOS =====
         document.addEventListener("DOMContentLoaded", () => {
             const hoje = new Date();
             document.getElementById("filter-date-start").value = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().split('T')[0];
@@ -395,8 +437,8 @@
                 dadosTratados.push({
                     row: i + 1, 
                     data: dataForm,
-                    nome: String(iNom !== -1 ? col[iNom] : col[1]),
-                    telefone: iTel !== -1 ? String(col[iTel]) : "",
+                    nome: String(iNom !== -1 ? col[iNom] : col[1]).trim(),
+                    telefone: iTel !== -1 ? String(col[iTel]).trim() : "",
                     canal: (iCan !== -1 && col[iCan]) ? String(col[iCan]).trim() : "Não Informado",
                     consultor: (iCon !== -1 && col[iCon]) ? String(col[iCon]).trim() : "Sem Consultor",
                     orcamento: (iOrc !== -1 && col[iOrc]) ? String(col[iOrc]).trim() : "Não",
@@ -405,30 +447,67 @@
                 });
             }
 
-            ["filter-date-start", "filter-date-end", "filter-consultant"].forEach(id => {
+            // Ativa os escutadores para todos os filtros do sistema e escutador de digitação
+            ["filter-date-start", "filter-date-end", "filter-consultant", "table-filter-consultant", "table-filter-status"].forEach(id => {
                 document.getElementById(id).removeEventListener("change", processarEAtualizarDashboardCompleto);
                 document.getElementById(id).addEventListener("change", processarEAtualizarDashboardCompleto);
             });
             
+            document.getElementById("table-search").removeEventListener("input", processarEAtualizarDashboardCompleto);
+            document.getElementById("table-search").addEventListener("input", processarEAtualizarDashboardCompleto);
+            
+            document.getElementById("btn-reset-filters").onclick = () => { configurarDatasPadrao(); processarEAtualizarDashboardCompleto(); };
+            
             if (usuarioLogado !== "") processarEAtualizarDashboardCompleto();
         }
 
+        // ===== MECANISMO DE PROCESSAMENTO SÊNIOR =====
         function processarEAtualizarDashboardCompleto() {
             if (usuarioLogado === "") return;
+            
+            // Filtros Globais do Topo (Gráficos e KPIs)
             const start = document.getElementById("filter-date-start").value;
             const end = document.getElementById("filter-date-end").value;
             let filterCons = document.getElementById("filter-consultant").value;
             if (usuarioLogado === "Claudia" || usuarioLogado === "Maicon") filterCons = usuarioLogado;
 
-            const filtrados = dadosTratados.filter(d => (start ? d.data >= start : true) && (end ? d.data <= end : true) && (filterCons === "todos" ? true : d.consultor === filterCons));
+            // Filtros Locais do Histórico da Tabela
+            const searchTxt = document.getElementById("table-search").value.trim().toLowerCase();
+            let tableCons = document.getElementById("table-filter-consultant").value;
+            if (usuarioLogado === "Claudia" || usuarioLogado === "Maicon") tableCons = usuarioLogado;
+            const tableStat = document.getElementById("table-filter-status").value;
 
-            document.getElementById("kpi-total-atendimentos").innerText = filtrados.length;
-            document.getElementById("kpi-mes-atual").innerText = filtrados.length;
-            document.getElementById("kpi-orcamentos-enviados").innerText = filtrados.filter(d => d.orcamento.toLowerCase() === "sim").length;
-            document.getElementById("kpi-taxa-conclusao").innerText = `${filtrados.length > 0 ? Math.round((filtrados.filter(d => d.status.includes("Concluído") || d.status.includes("Finalizado")).length / filtrados.length) * 100) : 0}%`;
+            // 1. Processamento para Gráficos e KPIs (Sempre respeita o período selecionado no topo)
+            const filtradosGraficos = dadosTratados.filter(d => (start ? d.data >= start : true) && (end ? d.data <= end : true) && (filterCons === "todos" ? true : d.consultor === filterCons));
 
-            renderizarTabela(filtrados);
-            renderizarGraficos(filtrados);
+            document.getElementById("kpi-total-atendimentos").innerText = filtradosGraficos.length;
+            document.getElementById("kpi-mes-atual").innerText = filtradosGraficos.length;
+            document.getElementById("kpi-orcamentos-enviados").innerText = filtradosGraficos.filter(d => d.orcamento.toLowerCase() === "sim").length;
+            document.getElementById("kpi-taxa-conclusao").innerText = `${filtradosGraficos.length > 0 ? Math.round((filtradosGraficos.filter(d => d.status.includes("Concluído") || d.status.includes("Finalizado")).length / filtradosGraficos.length) * 100) : 0}%`;
+
+            renderizarGraficos(filtradosGraficos);
+
+            // 2. Processamento Inteligente da Tabela (🚨 OPÇÃO B: Ignora datas do topo se houver busca digitada!)
+            const filtradosTabela = dadosTratados.filter(d => {
+                if (searchTxt !== "") {
+                    // Se estiver buscando por texto, varre Nome e Telefone em todo o histórico antigo
+                    const bateNome = d.nome.toLowerCase().includes(searchTxt);
+                    const bateTel = d.telefone.toLowerCase().includes(searchTxt);
+                    if (!bateNome && !bateTel) return false;
+                } else {
+                    // Se a busca estiver vazia, respeita o período de datas do topo normalmente
+                    if (start && d.data < start) return false;
+                    if (end && d.data > end) return false;
+                }
+
+                // Aplica os filtros locais de Consultor e Status da própria tabela
+                if (tableCons !== "todos" && d.consultor !== tableCons) return false;
+                if (tableStat !== "todos" && d.status !== tableStat) return false;
+
+                return true;
+            });
+
+            renderizarTabela(filtradosTabela);
         }
 
         function renderizarTabela(dados) {
@@ -436,26 +515,31 @@
             tbody.innerHTML = "";
             document.getElementById("table-row-count").innerText = dados.length;
             
+            if (dados.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="px-4 py-4 text-center text-slate-400 italic">Nenhum registro localizado.</td></tr>`; return;
+            }
+            
             dados.forEach(item => {
                 const tr = document.createElement("tr");
-                let stClass = "bg-blue-50 text-blue-700";
-                if(item.status.includes("Concluído")) stClass = "bg-emerald-50 text-emerald-700";
-                if(item.status.includes("Cancelado")) stClass = "bg-rose-50 text-rose-700";
+                let stClass = "bg-blue-50 text-blue-700 border border-blue-100";
+                if(item.status.includes("Concluído")) stClass = "bg-emerald-50 text-emerald-700 border border-emerald-100";
+                if(item.status.includes("Cancelado")) stClass = "bg-rose-50 text-rose-700 border border-rose-200";
+                if(item.status.includes("Aguardando")) stClass = "bg-amber-50 text-amber-700 border border-amber-200";
                 
                 const dataExibicao = item.data.split("-").reverse().join("/");
                 
-                // 🚨 CORREÇÃO 3: Botão de Editar acoplado diretamente ao nome do Cliente!
+                // 🚨 COLUNAS ENXUGADAS E BOTÃO EDITAR EM COLUNA EXCLUSIVA NO FIM
                 tr.innerHTML = `
                     <td class="px-4 py-3 text-slate-500 whitespace-nowrap">${dataExibicao}</td>
-                    <td class="px-4 py-3 font-bold whitespace-nowrap flex items-center gap-2">
-                        ${item.nome}
-                        <button type="button" onclick="editarAtendimento(${item.row})" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-2 py-1 rounded transition-colors cursor-pointer active:scale-95" title="Editar Atendimento">
-                            <i class="fa-solid fa-pen text-[10px]"></i>
+                    <td class="px-4 py-3 font-bold whitespace-nowrap">${item.nome}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-slate-600">${item.telefone || '-'}</td>
+                    <td class="px-4 py-3 whitespace-nowrap">${item.consultor}</td>
+                    <td class="px-4 py-3 text-center whitespace-nowrap"><span class="px-2 py-0.5 rounded-full text-[11px] font-medium ${stClass}">${item.status}</span></td>
+                    <td class="px-4 py-3 text-center whitespace-nowrap">
+                        <button type="button" onclick="editarAtendimento(${item.row})" class="bg-teal-50 hover:bg-teal-600 text-teal-700 hover:text-white border border-teal-200 font-bold px-3 py-1.5 rounded-xl transition-all cursor-pointer active:scale-95 text-[11px]">
+                            <i class="fa-solid fa-pen-to-square mr-1"></i>Editar
                         </button>
                     </td>
-                    <td class="px-4 py-3 whitespace-nowrap">${item.canal}</td>
-                    <td class="px-4 py-3 whitespace-nowrap">${item.consultor}</td>
-                    <td class="px-4 py-3 text-center whitespace-nowrap"><span class="px-2 py-0.5 rounded-full ${stClass}">${item.status}</span></td>
                 `;
                 tbody.appendChild(tr);
             });

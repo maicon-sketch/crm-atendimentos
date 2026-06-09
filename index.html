@@ -17,15 +17,23 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         
+        /* 🚨 CORREÇÃO 1: Rolagem livre restaurada para o PC e Mobile */
         html, body { 
             font-family: 'Inter', sans-serif; 
             background-color: #f8fafc; 
             margin: 0; padding: 0;
+            overscroll-behavior-y: none; /* Bloqueia só o "puxar para atualizar" nativo */
             -webkit-tap-highlight-color: transparent;
         }
         
         .chart-container { position: relative; height: 260px; width: 100%; }
-        .scroll-touch { -webkit-overflow-scrolling: touch; }
+        
+        /* 🚨 CORREÇÃO 2: Permite que a tabela role de lado sem travar a subida da página */
+        .table-container { 
+            overflow-x: auto; 
+            -webkit-overflow-scrolling: touch; 
+            touch-action: pan-x pan-y; 
+        }
     </style>
 </head>
 <body class="text-slate-800 antialiased relative md:select-text">
@@ -69,7 +77,7 @@
 
     <div id="modal-novo" class="fixed inset-0 bg-slate-900/90 backdrop-blur-sm flex items-center justify-center z-50 p-4 hidden">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md flex flex-col max-h-[90vh] overflow-hidden">
-            <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+            <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
                 <h3 id="modal-titulo" class="font-bold text-slate-800 text-lg flex items-center gap-2"><i class="fa-solid fa-file-pen text-teal-600"></i> Ficha do Atendimento</h3>
                 <button type="button" onclick="fecharModalNovo()" class="text-slate-400 hover:text-rose-500 transition-colors w-8 h-8 flex items-center justify-center rounded-full bg-slate-200/50">
                     <i class="fa-solid fa-xmark text-lg"></i>
@@ -211,9 +219,9 @@
 
             <div class="bg-white rounded-xl border border-slate-200/80 overflow-hidden">
                 <div class="p-4 bg-slate-50 flex justify-between items-center"><h3 class="font-bold text-slate-700 text-sm">Histórico Detalhado</h3><span id="table-row-count" class="text-xs bg-teal-50 text-teal-700 font-bold px-2 py-0.5 rounded-md">0</span></div>
-                <div class="overflow-x-auto scroll-touch">
+                <div class="table-container">
                     <table class="w-full text-left text-xs">
-                        <thead><tr class="bg-slate-100 text-slate-500 font-bold uppercase"><th class="px-4 py-3">Data</th><th class="px-4 py-3">Cliente</th><th class="px-4 py-3">Canal</th><th class="px-4 py-3">Consultor</th><th class="px-4 py-3 text-center">Status</th><th class="px-4 py-3 text-center">Ações</th></tr></thead>
+                        <thead><tr class="bg-slate-100 text-slate-500 font-bold uppercase"><th class="px-4 py-3">Data</th><th class="px-4 py-3 min-w-[150px]">Cliente</th><th class="px-4 py-3">Canal</th><th class="px-4 py-3">Consultor</th><th class="px-4 py-3 text-center">Status</th></tr></thead>
                         <tbody id="table-body" class="divide-y divide-slate-100"></tbody>
                     </table>
                 </div>
@@ -226,15 +234,17 @@
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyf3Y5lvdPzUDwcvB6FNP5hkL3C6r0SNh9jXqw-DZiQYPgwFU3iH2deNn2xws42sQlL/exec";
 
         let dadosTratados = [];
-        let linhaEmEdicao = null; // Guarda a linha sendo editada
+        let linhaEmEdicao = null; 
         let chartConsultoresInstance, chartStatusInstance, chartCanaisInstance, chartEvolucaoInstance;
         const BASE_ACESSOS = { "Claudia": "2021", "Fabio": "3031", "Maicon": "4041", "Adm": "9999" };
         let usuarioLogado = "";
 
+        // ===== LOGIN =====
         function deslogarUsuario() {
             usuarioLogado = "";
             document.getElementById("tela-login").classList.remove("hidden");
             document.getElementById("formLogin").reset();
+            window.scrollTo(0,0);
         }
 
         function autenticarUsuario(event) {
@@ -289,17 +299,12 @@
             document.getElementById('novo-nome').value = atendimento.nome;
             document.getElementById('novo-telefone').value = atendimento.telefone;
             
-            // Corrige canais que vieram nulos/errados para "Outros" no seletor
             const campoCanal = document.getElementById('novo-canal');
             campoCanal.value = Array.from(campoCanal.options).some(o => o.value === atendimento.canal) ? atendimento.canal : "Outros";
 
             const campoConsultor = document.getElementById('novo-consultor');
             campoConsultor.value = atendimento.consultor;
-            if (usuarioLogado === "Claudia" || usuarioLogado === "Maicon") {
-                campoConsultor.disabled = true;
-            } else {
-                campoConsultor.disabled = false;
-            }
+            campoConsultor.disabled = (usuarioLogado === "Claudia" || usuarioLogado === "Maicon");
 
             document.getElementById('novo-orcamento').value = atendimento.orcamento === "Sim" ? "Sim" : "Não";
             document.getElementById('novo-status').value = atendimento.status;
@@ -319,7 +324,7 @@
             const consultorDefinitivo = document.getElementById('novo-consultor').disabled ? usuarioLogado : document.getElementById('novo-consultor').value;
             
             const payload = {
-                row: linhaEmEdicao, // Passa a linha para o Google saber que é Edição
+                row: linhaEmEdicao, 
                 data: document.getElementById('novo-data').value,
                 nome: document.getElementById('novo-nome').value,
                 telefone: document.getElementById('novo-telefone').value,
@@ -367,7 +372,6 @@
             if (!rows || rows.length < 2) return;
             const cab = rows[0].map(c => String(c).trim().toLowerCase());
             
-            // Pega TODAS as colunas para a edição funcionar perfeitamente
             const iDat = cab.findIndex(h => h.includes("data"));
             const iNom = cab.findIndex(h => h.includes("nome"));
             const iTel = cab.findIndex(h => h.includes("telefone") || h.includes("tel"));
@@ -389,7 +393,7 @@
                 }
 
                 dadosTratados.push({
-                    row: i + 1, // <- ISSO É O QUE IDENTIFICA A LINHA NO GOOGLE PARA A EDIÇÃO!
+                    row: i + 1, 
                     data: dataForm,
                     nome: String(iNom !== -1 ? col[iNom] : col[1]),
                     telefone: iTel !== -1 ? String(col[iTel]) : "",
@@ -440,17 +444,18 @@
                 
                 const dataExibicao = item.data.split("-").reverse().join("/");
                 
+                // 🚨 CORREÇÃO 3: Botão de Editar acoplado diretamente ao nome do Cliente!
                 tr.innerHTML = `
-                    <td class="px-4 py-2 text-slate-500 whitespace-nowrap">${dataExibicao}</td>
-                    <td class="px-4 py-2 font-bold whitespace-nowrap">${item.nome}</td>
-                    <td class="px-4 py-2 whitespace-nowrap">${item.canal}</td>
-                    <td class="px-4 py-2 whitespace-nowrap">${item.consultor}</td>
-                    <td class="px-4 py-2 text-center whitespace-nowrap"><span class="px-2 py-0.5 rounded-full ${stClass}">${item.status}</span></td>
-                    <td class="px-4 py-2 text-center whitespace-nowrap">
-                        <button type="button" onclick="editarAtendimento(${item.row})" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg transition-colors cursor-pointer active:scale-95">
-                            <i class="fa-solid fa-pen text-[10px]"></i> Editar
+                    <td class="px-4 py-3 text-slate-500 whitespace-nowrap">${dataExibicao}</td>
+                    <td class="px-4 py-3 font-bold whitespace-nowrap flex items-center gap-2">
+                        ${item.nome}
+                        <button type="button" onclick="editarAtendimento(${item.row})" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-2 py-1 rounded transition-colors cursor-pointer active:scale-95" title="Editar Atendimento">
+                            <i class="fa-solid fa-pen text-[10px]"></i>
                         </button>
                     </td>
+                    <td class="px-4 py-3 whitespace-nowrap">${item.canal}</td>
+                    <td class="px-4 py-3 whitespace-nowrap">${item.consultor}</td>
+                    <td class="px-4 py-3 text-center whitespace-nowrap"><span class="px-2 py-0.5 rounded-full ${stClass}">${item.status}</span></td>
                 `;
                 tbody.appendChild(tr);
             });

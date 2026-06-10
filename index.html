@@ -216,14 +216,14 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div class="bg-white p-4 rounded-xl border border-slate-200/80"><h3 class="font-bold text-slate-700 text-xs mb-2">Por Consultor</h3><div class="chart-container"><canvas id="chart-consultores"></canvas></div></div>
-                <div class="bg-white p-4 rounded-xl border border-slate-200/80"><h3 class="font-bold text-slate-700 text-xs mb-2">Por Status</h3><div class="chart-container flex items-center justify-center"><canvas id="chart-status" style="max-width: 200px; max-height: 200px;"></canvas></div></div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200/80"><h3 class="font-bold text-slate-700 text-xs mb-2">Por Status</h3><div class="chart-container"><canvas id="chart-status"></canvas></div></div>
                 <div class="bg-white p-4 rounded-xl border border-slate-200/80"><h3 class="font-bold text-slate-700 text-xs mb-2">Por Canal</h3><div class="chart-container"><canvas id="chart-canais"></canvas></div></div>
                 <div class="bg-white p-4 rounded-xl border border-slate-200/80"><h3 class="font-bold text-slate-700 text-xs mb-2">Motivos de Encerramento</h3><div class="chart-container"><canvas id="chart-motivos"></canvas></div></div>
             </div>
 
             <div class="bg-white p-4 rounded-xl border border-slate-200/80 w-full">
                 <h3 class="font-bold text-slate-700 text-xs mb-2">Evolução Diária</h3>
-                <div class="chart-container"><canvas id="chart-evolucao"></canvas></div>
+                <div class="chart-container" style="height: 180px;"><canvas id="chart-evolucao"></canvas></div>
             </div>
 
             <div class="bg-white rounded-xl border border-slate-200/80 overflow-hidden">
@@ -292,6 +292,11 @@
         const BASE_ACESSOS = { "Claudia": "2021", "Fabio": "3031", "Maicon": "4041", "Adm": "9999" };
         let usuarioLogado = "";
 
+        // Inicialização global segura do plugin de rótulos
+        if (typeof ChartDataLabels !== 'undefined') {
+            Chart.register(ChartDataLabels);
+        }
+
         function configurarDatasPadrao() {
             const hoje = new Date();
             document.getElementById("filter-date-start").value = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().split('T')[0];
@@ -340,7 +345,6 @@
             }
         }
 
-        // ===== MOTIVO CONDICIONAL =====
         function verificarStatusMotivo() {
             const status = document.getElementById('novo-status').value;
             const containerMotivo = document.getElementById('container-motivo');
@@ -356,7 +360,6 @@
             }
         }
 
-        // ===== MODAL =====
         function abrirModalNovo() {
             linhaEmEdicao = null;
             document.getElementById('modal-novo').classList.remove('hidden');
@@ -429,12 +432,10 @@
             });
         }
 
-        // ===== TRATAMENTO DE MATRIZ =====
         document.addEventListener("DOMContentLoaded", () => {
             configurarDatasPadrao();
             carregarDadosDoServidor();
 
-            // 🚨 ESCUTADORES CONFIGURADOS UMA ÚNICA VEZ (FIM DO DUPLO PROCESSAMENTO)
             ["filter-date-start", "filter-date-end", "filter-consultant", "table-filter-consultant", "table-filter-status"].forEach(id => {
                 document.getElementById(id).addEventListener("change", () => {
                     const resetar = (id !== "table-filter-consultant" && id !== "table-filter-status");
@@ -500,7 +501,6 @@
                 });
             }
 
-            // ORDENAÇÃO MATEMÁTICA RIGOROSA (DO MAIS NOVO PARA O MAIS ANTIGO)
             dadosTratados.sort((a, b) => {
                 if (a.data > b.data) return -1;
                 if (a.data < b.data) return 1;
@@ -524,7 +524,6 @@
             if (usuarioLogado === "Claudia" || usuarioLogado === "Maicon") tableCons = usuarioLogado;
             const tableStat = document.getElementById("table-filter-status").value;
 
-            // FILTRO PARA GRAFICOS
             const filtradosGraficos = dadosTratados.filter(d => (start ? d.data >= start : true) && (end ? d.data <= end : true) && (filterCons === "todos" ? true : d.consultor === filterCons));
 
             document.getElementById("kpi-total-atendimentos").innerText = filtradosGraficos.length;
@@ -534,7 +533,6 @@
 
             renderizarGraficos(filtradosGraficos);
 
-            // FILTRO PARA TABELA
             let filtradosTabela = dadosTratados.filter(d => {
                 if (searchTxt !== "") {
                     const bateNome = d.nome.toLowerCase().includes(searchTxt);
@@ -613,7 +611,7 @@
             };
         }
 
-        // ===== 🚨 DESENHO DOS GRÁFICOS ISOLADOS LOCALMENTE (SEM ERROS DE EXECUÇÃO) =====
+        // ===== 🚨 CONSTRUÇÃO DOS GRÁFICOS CLEAN (SEM GRADES + QUANTIDADES) =====
         function renderizarGraficos(dados) {
             const cCons = {}, cStat = {}, cCan = {}, cData = {}, cMot = {};
             
@@ -628,13 +626,14 @@
                 }
             });
 
-            // Estrutura Limpa para Gráficos de Barras (Oculta eixos e remove grades)
+            // 🚨 AJUSTE DE ESPAÇAMENTO: Padding no Topo previne que os números batam no teto do quadro
             const optVerticaisClean = { 
                 responsive: true, 
                 maintainAspectRatio: false, 
+                layout: { padding: { top: 30 } }, 
                 scales: { 
-                    y: { beginAtZero: true, grid: { display: false }, ticks: { display: false } }, 
-                    x: { grid: { display: false }, ticks: { font: { size: 10 } } } 
+                    y: { beginAtZero: true, grid: { display: false }, ticks: { display: false }, border: { display: false } }, 
+                    x: { grid: { display: false }, ticks: { font: { size: 10 } }, border: { display: false } } 
                 },
                 plugins: {
                     legend: { display: false },
@@ -642,24 +641,24 @@
                 }
             };
 
-            // Chart 1: Consultores
+            // Chart 1: Consultores (🚨 maxBarThickness impede que barras sozinhas fiquem quadradas)
             if (chartConsultoresInstance) chartConsultoresInstance.destroy();
             chartConsultoresInstance = new Chart(document.getElementById('chart-consultores').getContext('2d'), { 
                 type: 'bar', 
-                data: { labels: Object.keys(cCons), datasets: [{ data: Object.values(cCons), backgroundColor: '#3b82f6', borderRadius: 4 }] }, 
+                data: { labels: Object.keys(cCons), datasets: [{ data: Object.values(cCons), backgroundColor: '#3b82f6', borderRadius: 4, maxBarThickness: 50 }] }, 
                 options: optVerticaisClean,
-                plugins: [ChartDataLabels] // Injetado localmente
+                plugins: [ChartDataLabels] 
             });
             
-            // Chart 2: Status (Rosca com % Embutido)
+            // Chart 2: Status (Rosca)
             if (chartStatusInstance) chartStatusInstance.destroy();
             chartStatusInstance = new Chart(document.getElementById('chart-status').getContext('2d'), { 
                 type: 'doughnut', 
                 data: { labels: Object.keys(cStat), datasets: [{ data: Object.values(cStat), backgroundColor: ['#10b981', '#3b82f6', '#ef4444', '#f59e0b', '#64748b'] }] }, 
                 options: { 
-                    cutout: '65%', responsive: true, maintainAspectRatio: false, 
+                    cutout: '60%', responsive: true, maintainAspectRatio: false, layout: { padding: 10 },
                     plugins: { 
-                        legend: { display: true, position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } },
+                        legend: { display: true, position: 'bottom', labels: { boxWidth: 12, padding: 15, font: { size: 10 } } },
                         datalabels: {
                             color: '#fff', font: { weight: 'bold', size: 10 },
                             formatter: (value, ctx) => {
@@ -671,50 +670,51 @@
                         }
                     } 
                 },
-                plugins: [ChartDataLabels] // Injetado localmente
+                plugins: [ChartDataLabels] 
             });
             
             // Chart 3: Canais
             if (chartCanaisInstance) chartCanaisInstance.destroy();
             chartCanaisInstance = new Chart(document.getElementById('chart-canais').getContext('2d'), { 
                 type: 'bar', 
-                data: { labels: Object.keys(cCan), datasets: [{ data: Object.values(cCan), backgroundColor: '#0f766e', borderRadius: 4 }] }, 
+                data: { labels: Object.keys(cCan), datasets: [{ data: Object.values(cCan), backgroundColor: '#0f766e', borderRadius: 4, maxBarThickness: 50 }] }, 
                 options: optVerticaisClean,
-                plugins: [ChartDataLabels] // Injetado localmente
+                plugins: [ChartDataLabels] 
             });
             
-            // Chart 4: Motivos de Encerramento (Barras Horizontais Dinâmicas)
+            // Chart 4: Motivos de Encerramento (Barras Horizontais)
             if (chartMotivosInstance) chartMotivosInstance.destroy();
             chartMotivosInstance = new Chart(document.getElementById('chart-motivos').getContext('2d'), { 
                 type: 'bar', 
-                data: { labels: Object.keys(cMot), datasets: [{ data: Object.values(cMot), backgroundColor: '#ef4444', borderRadius: 4 }] }, 
+                data: { labels: Object.keys(cMot), datasets: [{ data: Object.values(cMot), backgroundColor: '#ef4444', borderRadius: 4, maxBarThickness: 30 }] }, 
                 options: {
                     responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+                    layout: { padding: { right: 40 } },
                     scales: {
-                        y: { grid: { display: false }, ticks: { font: { size: 10 } } },
-                        x: { beginAtZero: true, grid: { display: false }, ticks: { display: false } }
+                        y: { grid: { display: false }, ticks: { font: { size: 10 } }, border: { display: false } },
+                        x: { beginAtZero: true, grid: { display: false }, ticks: { display: false }, border: { display: false } }
                     },
                     plugins: {
                         legend: { display: false },
                         datalabels: { display: true, anchor: 'end', align: 'right', color: '#475569', font: { weight: 'bold', size: 11 } }
                     }
                 },
-                plugins: [ChartDataLabels] // Injetado localmente
+                plugins: [ChartDataLabels] 
             });
 
-            // Chart 5: Evolução Diária (Linha Limpa - Sem Rótulos Invasivos)
+            // Chart 5: Evolução Diária
             const dOrd = Object.keys(cData).sort();
             if (chartEvolucaoInstance) chartEvolucaoInstance.destroy();
             chartEvolucaoInstance = new Chart(document.getElementById('chart-evolucao').getContext('2d'), { 
                 type: 'line', 
                 data: { labels: dOrd.map(d => d.split("-").slice(1,3).reverse().join("/")), datasets: [{ data: dOrd.map(d => cData[d]), borderColor: '#10b981', fill: false, tension: 0.2 }] }, 
                 options: {
-                    responsive: true, maintainAspectRatio: false,
+                    responsive: true, maintainAspectRatio: false, layout: { padding: { top: 20 } },
                     scales: {
-                        y: { beginAtZero: true, grid: { display: false }, ticks: { font: { size: 10 } } },
-                        x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+                        y: { beginAtZero: true, grid: { display: false }, ticks: { font: { size: 10 } }, border: { display: false } },
+                        x: { grid: { display: false }, ticks: { font: { size: 10 } }, border: { display: false } }
                     },
-                    plugins: { legend: false, datalabels: { display: false } } // Travado para não herdar o plugin
+                    plugins: { legend: false, datalabels: { display: false } } 
                 }
             });
         }

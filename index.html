@@ -452,6 +452,13 @@
                     if (p.length === 3) dataForm = `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
                 }
 
+                let statusForm = (iSta !== -1 && col[iSta]) ? String(col[iSta]).trim() : "Em atendimento";
+                
+                // 🚨 AUTOMAÇÃO EXTRA: Se na planilha estiver escrito "Em Andamento", o app normaliza na hora para "Em atendimento"
+                if (statusForm.toLowerCase() === "em andamento") {
+                    statusForm = "Em atendimento";
+                }
+
                 dadosTratados.push({
                     row: i + 1, 
                     data: dataForm,
@@ -460,12 +467,12 @@
                     canal: (iCan !== -1 && col[iCan]) ? String(col[iCan]).trim() : "Não Informado",
                     consultor: (iCon !== -1 && col[iCon]) ? String(col[iCon]).trim() : "Sem Consultor",
                     orcamento: (iOrc !== -1 && col[iOrc]) ? String(col[iOrc]).trim() : "Não",
-                    status: (iSta !== -1 && col[iSta]) ? String(col[iSta]).trim() : "Em atendimento",
+                    status: statusForm,
                     motivo: iMot !== -1 ? String(col[iMot]) : ""
                 });
             }
 
-            // 🚨 ORDENAÇÃO MATEMÁTICA RIGOROSA (DO MAIS NOVO PARA O MAIS ANTIGO)
+            // ORDENAÇÃO MATEMÁTICA RIGOROSA (DO MAIS NOVO PARA O MAIS ANTIGO)
             dadosTratados.sort((a, b) => {
                 if (a.data > b.data) return -1;
                 if (a.data < b.data) return 1;
@@ -497,7 +504,7 @@
             if (usuarioLogado === "Claudia" || usuarioLogado === "Maicon") tableCons = usuarioLogado;
             const tableStat = document.getElementById("table-filter-status").value;
 
-            // GRÁFICOS E KPIs (Sempre filtrados por data)
+            // GRÁFICOS E KPIs
             const filtradosGraficos = dadosTratados.filter(d => (start ? d.data >= start : true) && (end ? d.data <= end : true) && (filterCons === "todos" ? true : d.consultor === filterCons));
 
             document.getElementById("kpi-total-atendimentos").innerText = filtradosGraficos.length;
@@ -507,7 +514,7 @@
 
             renderizarGraficos(filtradosGraficos);
 
-            // TABELA (Se houver busca por texto, ignora filtro de datas)
+            // TABELA
             let filtradosTabela = dadosTratados.filter(d => {
                 if (searchTxt !== "") {
                     const bateNome = d.nome.toLowerCase().includes(searchTxt);
@@ -522,7 +529,6 @@
                 return true;
             });
 
-            // Corta estritamente para exibir apenas as 10 primeiras fileiras (que já estão ordenadas pelas mais recentes)
             filtradosTabela = filtradosTabela.slice(0, 10);
             renderizarTabela(filtradosTabela);
         }

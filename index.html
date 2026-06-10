@@ -268,7 +268,6 @@
     </div>
 
     <script>
-        // ⚠️ SUA URL DEFINITIVA AQUI:
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyf3Y5lvdPzUDwcvB6FNP5hkL3C6r0SNh9jXqw-DZiQYPgwFU3iH2deNn2xws42sQlL/exec";
 
         let dadosTratados = [];
@@ -300,7 +299,6 @@
                 const tabSel = document.getElementById("table-filter-consultant");
                 const modCont = document.getElementById("modal-container-consultor");
                 
-                // Se for vendedor comum, oculta os seletores de consultor da tela para limpar o design
                 if (usuarioLogado === "Claudia" || usuarioLogado === "Maicon") {
                     topCont.classList.add('hidden'); tabCont.classList.add('hidden'); modCont.classList.add('hidden');
                     topSel.innerHTML = `<option value="${usuarioLogado}">${usuarioLogado}</option>`;
@@ -320,7 +318,7 @@
             }
         }
 
-        // ===== LÓGICA DO CAMPO MOTIVO CONDICIONAL =====
+        // ===== MOTIVO CONDICIONAL =====
         function verificarStatusMotivo() {
             const status = document.getElementById('novo-status').value;
             const containerMotivo = document.getElementById('container-motivo');
@@ -336,7 +334,7 @@
             }
         }
 
-        // ===== MODAL DE CADASTRO/EDIÇÃO =====
+        // ===== MODAL =====
         function abrirModalNovo() {
             linhaEmEdicao = null;
             document.getElementById('modal-novo').classList.remove('hidden');
@@ -368,7 +366,6 @@
             document.getElementById('novo-consultor').value = atendimento.consultor;
             document.getElementById('novo-orcamento').value = atendimento.orcamento === "Sim" ? "Sim" : "Não";
             
-            // Corrige e preenche o status e motivo
             document.getElementById('novo-status').value = atendimento.status;
             verificarStatusMotivo(); 
             document.getElementById('novo-motivo').value = atendimento.motivo;
@@ -410,7 +407,7 @@
             });
         }
 
-        // ===== CARREGAMENTO DE DADOS =====
+        // ===== TRATAMENTO DE MATRIZ =====
         document.addEventListener("DOMContentLoaded", () => {
             const hoje = new Date();
             document.getElementById("filter-date-start").value = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().split('T')[0];
@@ -468,8 +465,12 @@
                 });
             }
 
-            // Inverte o banco de dados para os mais novos (do fim da planilha) aparecerem no topo!
-            dadosTratados.reverse();
+            // 🚨 ORDENAÇÃO MATEMÁTICA RIGOROSA (DO MAIS NOVO PARA O MAIS ANTIGO)
+            dadosTratados.sort((a, b) => {
+                if (a.data > b.data) return -1;
+                if (a.data < b.data) return 1;
+                return b.row - a.row;
+            });
 
             ["filter-date-start", "filter-date-end", "filter-consultant", "table-filter-consultant", "table-filter-status"].forEach(id => {
                 document.getElementById(id).removeEventListener("change", processarEAtualizarDashboardCompleto);
@@ -479,12 +480,10 @@
             document.getElementById("table-search").removeEventListener("input", processarEAtualizarDashboardCompleto);
             document.getElementById("table-search").addEventListener("input", processarEAtualizarDashboardCompleto);
             
-            document.getElementById("btn-reset-filters").onclick = () => { configurarDatasPadrao(); processarEAtualizarDashboardCompleto(); };
-            
             if (usuarioLogado !== "") processarEAtualizarDashboardCompleto();
         }
 
-        // ===== ATUALIZAÇÃO DE TELA =====
+        // ===== PROCESSAMENTO E FILTROS =====
         function processarEAtualizarDashboardCompleto() {
             if (usuarioLogado === "") return;
             
@@ -498,7 +497,7 @@
             if (usuarioLogado === "Claudia" || usuarioLogado === "Maicon") tableCons = usuarioLogado;
             const tableStat = document.getElementById("table-filter-status").value;
 
-            // DADOS PARA GRÁFICOS (Respeita o filtro Global do Topo)
+            // GRÁFICOS E KPIs (Sempre filtrados por data)
             const filtradosGraficos = dadosTratados.filter(d => (start ? d.data >= start : true) && (end ? d.data <= end : true) && (filterCons === "todos" ? true : d.consultor === filterCons));
 
             document.getElementById("kpi-total-atendimentos").innerText = filtradosGraficos.length;
@@ -508,7 +507,7 @@
 
             renderizarGraficos(filtradosGraficos);
 
-            // DADOS PARA A TABELA (Pesquisa Livre ou Filtros Globais + Limite de 10)
+            // TABELA (Se houver busca por texto, ignora filtro de datas)
             let filtradosTabela = dadosTratados.filter(d => {
                 if (searchTxt !== "") {
                     const bateNome = d.nome.toLowerCase().includes(searchTxt);
@@ -523,7 +522,7 @@
                 return true;
             });
 
-            // Aplica o limite dos 10 últimos (Como a matriz foi invertida, pega os primeiros 10)
+            // Corta estritamente para exibir apenas as 10 primeiras fileiras (que já estão ordenadas pelas mais recentes)
             filtradosTabela = filtradosTabela.slice(0, 10);
             renderizarTabela(filtradosTabela);
         }
@@ -541,7 +540,6 @@
                 const tr = document.createElement("tr");
                 let stClass = "bg-blue-50 text-blue-700 border border-blue-100";
                 
-                // NOVA PALETA DE CORES PARA OS STATUS
                 if(item.status === "Venda Efetuada") stClass = "bg-emerald-50 text-emerald-700 border border-emerald-100";
                 if(item.status === "Encerrado") stClass = "bg-rose-50 text-rose-700 border border-rose-200";
                 if(item.status === "Orçamento Enviado") stClass = "bg-amber-50 text-amber-700 border border-amber-200";

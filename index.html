@@ -26,13 +26,7 @@
         }
         
         .chart-container { position: relative; height: 260px; width: 100%; }
-        
-        /* 🚨 DESTRAVAMENTO SÊNIOR: Permite deslizar de lado na tabela e rolar a página verticalmente sem travar */
-        .table-container { 
-            overflow-x: auto; 
-            -webkit-overflow-scrolling: touch; 
-            touch-action: auto;
-        }
+        .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; touch-action: auto; }
     </style>
 </head>
 <body class="text-slate-800 antialiased relative md:select-text">
@@ -90,7 +84,7 @@
                             <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Data</label>
                             <input type="date" id="novo-data" required class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:border-teal-500 outline-none">
                         </div>
-                        <div>
+                        <div id="modal-container-consultor">
                             <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Consultor</label>
                             <select id="novo-consultor" required class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:border-teal-500 outline-none">
                                 <option value="Claudia">Claudia</option>
@@ -128,21 +122,31 @@
                             </select>
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Status</label>
-                            <select id="novo-status" required class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:border-teal-500 outline-none">
-                                <option value="Em Atendimento">Em Atendimento</option>
-                                <option value="Aguardando">Aguardando</option>
-                                <option value="Concluído">Concluído</option>
-                                <option value="Cancelado">Cancelado</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Motivo</label>
-                            <input type="text" id="novo-motivo" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:border-teal-500 outline-none">
-                        </div>
+                    
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Status</label>
+                        <select id="novo-status" onchange="verificarStatusMotivo()" required class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:border-teal-500 outline-none">
+                            <option value="Em atendimento">Em atendimento</option>
+                            <option value="Orçamento Enviado">Orçamento Enviado</option>
+                            <option value="Venda Efetuada">Venda Efetuada</option>
+                            <option value="Encerrado">Encerrado</option>
+                        </select>
                     </div>
+
+                    <div id="container-motivo" class="hidden">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Motivo do Encerramento</label>
+                        <select id="novo-motivo" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:border-teal-500 outline-none">
+                            <option value="">Selecione o motivo...</option>
+                            <option value="Cliente parou de responder">Cliente parou de responder</option>
+                            <option value="Preço alto / Fora do orçamento">Preço alto / Fora do orçamento</option>
+                            <option value="Prazo de entrega muito longo">Prazo de entrega muito longo</option>
+                            <option value="Comprou no concorrente">Comprou no concorrente</option>
+                            <option value="Apenas pesquisando / Sem interesse real">Apenas pesquisando / Sem interesse real</option>
+                            <option value="Produto/Serviço indisponível no momento">Produto/Serviço indisponível no momento</option>
+                            <option value="Desistiu da compra / Mudança de planos">Desistiu da compra / Mudança de planos</option>
+                        </select>
+                    </div>
+
                     <div class="pt-2">
                         <button type="submit" id="btn-salvar-novo" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3.5 rounded-xl text-sm shadow-md transition-colors active:scale-95 duration-100 flex items-center justify-center gap-2">
                             <i class="fa-solid fa-cloud-arrow-up"></i> Salvar Atendimento
@@ -192,7 +196,7 @@
                         <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Data Fim</label>
                         <input type="date" id="filter-date-end" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none">
                     </div>
-                    <div>
+                    <div id="container-filter-consultant">
                         <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Consultor Geral</label>
                         <select id="filter-consultant" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none">
                             <option value="todos">Todos</option>
@@ -217,20 +221,17 @@
             </div>
 
             <div class="bg-white rounded-xl border border-slate-200/80 overflow-hidden">
-                
                 <div class="p-4 bg-slate-50 border-b border-slate-100 space-y-3">
                     <div class="flex justify-between items-center">
-                        <h3 class="font-bold text-slate-700 text-sm">Histórico Detalhado</h3>
+                        <h3 class="font-bold text-slate-700 text-sm">Histórico (Top 10)</h3>
                         <span id="table-row-count" class="text-xs bg-teal-50 text-teal-700 font-bold px-2 py-0.5 rounded-md">0</span>
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
                         <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                                <i class="fa-solid fa-magnifying-glass text-xs"></i>
-                            </span>
-                            <input type="text" id="table-search" placeholder="Buscar cliente por nome ou celular..." class="w-full text-xs bg-white border border-slate-200 rounded-xl pl-9 pr-3 py-2 outline-none focus:border-teal-500">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-magnifying-glass text-xs"></i></span>
+                            <input type="text" id="table-search" placeholder="Buscar cliente ou celular..." class="w-full text-xs bg-white border border-slate-200 rounded-xl pl-9 pr-3 py-2 outline-none focus:border-teal-500">
                         </div>
-                        <div>
+                        <div id="container-table-filter-consultant">
                             <select id="table-filter-consultant" class="w-full text-xs bg-white border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-teal-500">
                                 <option value="todos">Todos os Consultores</option>
                             </select>
@@ -238,10 +239,10 @@
                         <div>
                             <select id="table-filter-status" class="w-full text-xs bg-white border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-teal-500">
                                 <option value="todos">Todos os Status</option>
-                                <option value="Em Atendimento">Em Atendimento</option>
-                                <option value="Aguardando">Aguardando</option>
-                                <option value="Concluído">Concluído</option>
-                                <option value="Cancelado">Cancelado</option>
+                                <option value="Em atendimento">Em atendimento</option>
+                                <option value="Orçamento Enviado">Orçamento Enviado</option>
+                                <option value="Venda Efetuada">Venda Efetuada</option>
+                                <option value="Encerrado">Encerrado</option>
                             </select>
                         </div>
                     </div>
@@ -267,6 +268,7 @@
     </div>
 
     <script>
+        // ⚠️ SUA URL DEFINITIVA AQUI:
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyf3Y5lvdPzUDwcvB6FNP5hkL3C6r0SNh9jXqw-DZiQYPgwFU3iH2deNn2xws42sQlL/exec";
 
         let dadosTratados = [];
@@ -275,7 +277,7 @@
         const BASE_ACESSOS = { "Claudia": "2021", "Fabio": "3031", "Maicon": "4041", "Adm": "9999" };
         let usuarioLogado = "";
 
-        // ===== LOGIN =====
+        // ===== LOGIN E PRIVACIDADE =====
         function deslogarUsuario() {
             usuarioLogado = "";
             document.getElementById("tela-login").classList.remove("hidden");
@@ -292,15 +294,19 @@
                 document.getElementById("usuario-logado-badge").innerText = usr;
                 document.getElementById("tela-login").classList.add("hidden");
                 
-                // Sincroniza as permissões de perfil nos drop-downs do topo e da tabela
+                const topCont = document.getElementById("container-filter-consultant");
+                const tabCont = document.getElementById("container-table-filter-consultant");
                 const topSel = document.getElementById("filter-consultant");
                 const tabSel = document.getElementById("table-filter-consultant");
+                const modCont = document.getElementById("modal-container-consultor");
                 
+                // Se for vendedor comum, oculta os seletores de consultor da tela para limpar o design
                 if (usuarioLogado === "Claudia" || usuarioLogado === "Maicon") {
-                    topSel.innerHTML = `<option value="${usuarioLogado}">${usuarioLogado}</option>`; topSel.disabled = true;
-                    tabSel.innerHTML = `<option value="${usuarioLogado}">${usuarioLogado}</option>`; tabSel.disabled = true;
+                    topCont.classList.add('hidden'); tabCont.classList.add('hidden'); modCont.classList.add('hidden');
+                    topSel.innerHTML = `<option value="${usuarioLogado}">${usuarioLogado}</option>`;
+                    tabSel.innerHTML = `<option value="${usuarioLogado}">${usuarioLogado}</option>`;
                 } else {
-                    topSel.disabled = false; tabSel.disabled = false;
+                    topCont.classList.remove('hidden'); tabCont.classList.remove('hidden'); modCont.classList.remove('hidden');
                     topSel.innerHTML = '<option value="todos">Todos</option>';
                     tabSel.innerHTML = '<option value="todos">Todos os Consultores</option>';
                     ["Claudia", "Fabio", "Maicon"].forEach(c => {
@@ -314,18 +320,33 @@
             }
         }
 
-        // ===== MODAL E CADASTRO =====
+        // ===== LÓGICA DO CAMPO MOTIVO CONDICIONAL =====
+        function verificarStatusMotivo() {
+            const status = document.getElementById('novo-status').value;
+            const containerMotivo = document.getElementById('container-motivo');
+            const campoMotivo = document.getElementById('novo-motivo');
+            
+            if (status === "Encerrado") {
+                containerMotivo.classList.remove('hidden');
+                campoMotivo.required = true;
+            } else {
+                containerMotivo.classList.add('hidden');
+                campoMotivo.required = false;
+                campoMotivo.value = ""; 
+            }
+        }
+
+        // ===== MODAL DE CADASTRO/EDIÇÃO =====
         function abrirModalNovo() {
             linhaEmEdicao = null;
             document.getElementById('modal-novo').classList.remove('hidden');
             document.getElementById('form-novo').reset();
             document.getElementById('novo-data').valueAsDate = new Date();
+            verificarStatusMotivo();
             
             const campoConsultor = document.getElementById('novo-consultor');
             if (usuarioLogado === "Claudia" || usuarioLogado === "Maicon") {
-                campoConsultor.value = usuarioLogado; campoConsultor.disabled = true;
-            } else {
-                campoConsultor.disabled = false;
+                campoConsultor.value = usuarioLogado;
             }
             document.getElementById('btn-salvar-novo').innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Salvar Atendimento';
         }
@@ -344,12 +365,12 @@
             const campoCanal = document.getElementById('novo-canal');
             campoCanal.value = Array.from(campoCanal.options).some(o => o.value === atendimento.canal) ? atendimento.canal : "Outros";
 
-            const campoConsultor = document.getElementById('novo-consultor');
-            campoConsultor.value = atendimento.consultor;
-            campoConsultor.disabled = (usuarioLogado === "Claudia" || usuarioLogado === "Maicon");
-
+            document.getElementById('novo-consultor').value = atendimento.consultor;
             document.getElementById('novo-orcamento').value = atendimento.orcamento === "Sim" ? "Sim" : "Não";
+            
+            // Corrige e preenche o status e motivo
             document.getElementById('novo-status').value = atendimento.status;
+            verificarStatusMotivo(); 
             document.getElementById('novo-motivo').value = atendimento.motivo;
 
             document.getElementById('btn-salvar-novo').innerHTML = '<i class="fa-solid fa-pen-to-square"></i> Atualizar Atendimento';
@@ -363,7 +384,7 @@
             btnSalvar.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
             btnSalvar.disabled = true;
             
-            const consultorDefinitivo = document.getElementById('novo-consultor').disabled ? usuarioLogado : document.getElementById('novo-consultor').value;
+            const consultorDefinitivo = (usuarioLogado === "Claudia" || usuarioLogado === "Maicon") ? usuarioLogado : document.getElementById('novo-consultor').value;
             
             const payload = {
                 row: linhaEmEdicao, 
@@ -389,7 +410,7 @@
             });
         }
 
-        // ===== INFRAESTRUTURA DE DADOS =====
+        // ===== CARREGAMENTO DE DADOS =====
         document.addEventListener("DOMContentLoaded", () => {
             const hoje = new Date();
             document.getElementById("filter-date-start").value = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().split('T')[0];
@@ -442,12 +463,14 @@
                     canal: (iCan !== -1 && col[iCan]) ? String(col[iCan]).trim() : "Não Informado",
                     consultor: (iCon !== -1 && col[iCon]) ? String(col[iCon]).trim() : "Sem Consultor",
                     orcamento: (iOrc !== -1 && col[iOrc]) ? String(col[iOrc]).trim() : "Não",
-                    status: (iSta !== -1 && col[iSta]) ? String(col[iSta]).trim() : "Em Atendimento",
+                    status: (iSta !== -1 && col[iSta]) ? String(col[iSta]).trim() : "Em atendimento",
                     motivo: iMot !== -1 ? String(col[iMot]) : ""
                 });
             }
 
-            // Ativa os escutadores para todos os filtros do sistema e escutador de digitação
+            // Inverte o banco de dados para os mais novos (do fim da planilha) aparecerem no topo!
+            dadosTratados.reverse();
+
             ["filter-date-start", "filter-date-end", "filter-consultant", "table-filter-consultant", "table-filter-status"].forEach(id => {
                 document.getElementById(id).removeEventListener("change", processarEAtualizarDashboardCompleto);
                 document.getElementById(id).addEventListener("change", processarEAtualizarDashboardCompleto);
@@ -461,52 +484,47 @@
             if (usuarioLogado !== "") processarEAtualizarDashboardCompleto();
         }
 
-        // ===== MECANISMO DE PROCESSAMENTO SÊNIOR =====
+        // ===== ATUALIZAÇÃO DE TELA =====
         function processarEAtualizarDashboardCompleto() {
             if (usuarioLogado === "") return;
             
-            // Filtros Globais do Topo (Gráficos e KPIs)
             const start = document.getElementById("filter-date-start").value;
             const end = document.getElementById("filter-date-end").value;
             let filterCons = document.getElementById("filter-consultant").value;
             if (usuarioLogado === "Claudia" || usuarioLogado === "Maicon") filterCons = usuarioLogado;
 
-            // Filtros Locais do Histórico da Tabela
             const searchTxt = document.getElementById("table-search").value.trim().toLowerCase();
             let tableCons = document.getElementById("table-filter-consultant").value;
             if (usuarioLogado === "Claudia" || usuarioLogado === "Maicon") tableCons = usuarioLogado;
             const tableStat = document.getElementById("table-filter-status").value;
 
-            // 1. Processamento para Gráficos e KPIs (Sempre respeita o período selecionado no topo)
+            // DADOS PARA GRÁFICOS (Respeita o filtro Global do Topo)
             const filtradosGraficos = dadosTratados.filter(d => (start ? d.data >= start : true) && (end ? d.data <= end : true) && (filterCons === "todos" ? true : d.consultor === filterCons));
 
             document.getElementById("kpi-total-atendimentos").innerText = filtradosGraficos.length;
             document.getElementById("kpi-mes-atual").innerText = filtradosGraficos.length;
             document.getElementById("kpi-orcamentos-enviados").innerText = filtradosGraficos.filter(d => d.orcamento.toLowerCase() === "sim").length;
-            document.getElementById("kpi-taxa-conclusao").innerText = `${filtradosGraficos.length > 0 ? Math.round((filtradosGraficos.filter(d => d.status.includes("Concluído") || d.status.includes("Finalizado")).length / filtradosGraficos.length) * 100) : 0}%`;
+            document.getElementById("kpi-taxa-conclusao").innerText = `${filtradosGraficos.length > 0 ? Math.round((filtradosGraficos.filter(d => d.status === "Venda Efetuada").length / filtradosGraficos.length) * 100) : 0}%`;
 
             renderizarGraficos(filtradosGraficos);
 
-            // 2. Processamento Inteligente da Tabela (🚨 OPÇÃO B: Ignora datas do topo se houver busca digitada!)
-            const filtradosTabela = dadosTratados.filter(d => {
+            // DADOS PARA A TABELA (Pesquisa Livre ou Filtros Globais + Limite de 10)
+            let filtradosTabela = dadosTratados.filter(d => {
                 if (searchTxt !== "") {
-                    // Se estiver buscando por texto, varre Nome e Telefone em todo o histórico antigo
                     const bateNome = d.nome.toLowerCase().includes(searchTxt);
                     const bateTel = d.telefone.toLowerCase().includes(searchTxt);
                     if (!bateNome && !bateTel) return false;
                 } else {
-                    // Se a busca estiver vazia, respeita o período de datas do topo normalmente
                     if (start && d.data < start) return false;
                     if (end && d.data > end) return false;
                 }
-
-                // Aplica os filtros locais de Consultor e Status da própria tabela
                 if (tableCons !== "todos" && d.consultor !== tableCons) return false;
                 if (tableStat !== "todos" && d.status !== tableStat) return false;
-
                 return true;
             });
 
+            // Aplica o limite dos 10 últimos (Como a matriz foi invertida, pega os primeiros 10)
+            filtradosTabela = filtradosTabela.slice(0, 10);
             renderizarTabela(filtradosTabela);
         }
 
@@ -522,13 +540,14 @@
             dados.forEach(item => {
                 const tr = document.createElement("tr");
                 let stClass = "bg-blue-50 text-blue-700 border border-blue-100";
-                if(item.status.includes("Concluído")) stClass = "bg-emerald-50 text-emerald-700 border border-emerald-100";
-                if(item.status.includes("Cancelado")) stClass = "bg-rose-50 text-rose-700 border border-rose-200";
-                if(item.status.includes("Aguardando")) stClass = "bg-amber-50 text-amber-700 border border-amber-200";
+                
+                // NOVA PALETA DE CORES PARA OS STATUS
+                if(item.status === "Venda Efetuada") stClass = "bg-emerald-50 text-emerald-700 border border-emerald-100";
+                if(item.status === "Encerrado") stClass = "bg-rose-50 text-rose-700 border border-rose-200";
+                if(item.status === "Orçamento Enviado") stClass = "bg-amber-50 text-amber-700 border border-amber-200";
                 
                 const dataExibicao = item.data.split("-").reverse().join("/");
                 
-                // 🚨 COLUNAS ENXUGADAS E BOTÃO EDITAR EM COLUNA EXCLUSIVA NO FIM
                 tr.innerHTML = `
                     <td class="px-4 py-3 text-slate-500 whitespace-nowrap">${dataExibicao}</td>
                     <td class="px-4 py-3 font-bold whitespace-nowrap">${item.nome}</td>

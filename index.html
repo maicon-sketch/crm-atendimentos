@@ -102,3 +102,569 @@
                         <div>
                             <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Telefone</label>
                             <input type="tel" id="novo-telefone" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:border-teal-500 outline-none">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Canal</label>
+                            <select id="novo-canal" required class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:border-teal-500 outline-none">
+                                <option value="Indicação">Indicação</option>
+                                <option value="Instagram">Instagram</option>
+                                <option value="Loja">Loja</option>
+                                <option value="Site">Site</option>
+                                <option value="WhatsApp">WhatsApp</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Orçamento?</label>
+                            <select id="novo-orcamento" required class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:border-teal-500 outline-none">
+                                <option value="Não">Não</option>
+                                <option value="Sim">Sim</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Status</label>
+                        <select id="novo-status" onchange="verificarStatusMotivo()" required class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:border-teal-500 outline-none">
+                            <option value="Em atendimento">Em atendimento</option>
+                            <option value="Orçamento Enviado">Orçamento Enviado</option>
+                            <option value="Venda Efetuada">Venda Efetuada</option>
+                            <option value="Encerrado">Encerrado</option>
+                        </select>
+                    </div>
+
+                    <div id="container-motivo" class="hidden">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Motivo do Encerramento</label>
+                        <select id="novo-motivo" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:border-teal-500 outline-none">
+                            <option value="">Selecione o motivo...</option>
+                            <option value="Cliente parou de responder">Cliente parou de responder</option>
+                            <option value="Preço alto / Fora do orçamento">Preço alto / Fora do orçamento</option>
+                            <option value="Prazo de entrega muito longo">Prazo de entrega muito longo</option>
+                            <option value="Comprou no concorrente">Comprou no concorrente</option>
+                            <option value="Apenas pesquisando / Sem interesse real">Apenas pesquisando / Sem interesse real</option>
+                            <option value="Produto/Serviço indisponível no momento">Produto/Serviço indisponível no momento</option>
+                            <option value="Desistiu da compra / Mudança de planos">Desistiu da compra / Mudança de planos</option>
+                        </select>
+                    </div>
+
+                    <div class="pt-2">
+                        <button type="submit" id="btn-salvar-novo" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3.5 rounded-xl text-sm shadow-md transition-colors active:scale-95 duration-100 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> Salvar Atendimento
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="banner-erro" class="bg-rose-600 text-white px-4 py-3 text-center text-xs font-bold hidden sticky top-0 z-50 shadow-md">
+        <i class="fa-solid fa-triangle-exclamation mr-1"></i> Falha ao conectar. Atualizando...
+    </div>
+
+    <div>
+        <header class="bg-slate-900 text-white shadow-md sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto px-4 py-3.5 flex flex-col sm:flex-row justify-between items-center gap-3">
+                <div class="flex items-center gap-3 w-full sm:w-auto">
+                    <div class="bg-teal-500 p-2 rounded-lg shadow-inner shrink-0">
+                        <i class="fa-solid fa-chart-line text-lg text-slate-900"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold tracking-tight leading-tight">Dashboard de Atendimentos</h1>
+                        <p class="text-xs text-slate-400">Logado como: <span id="usuario-logado-badge" class="text-teal-400 font-bold">-</span></p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-2 justify-between sm:justify-end w-full sm:w-auto border-t border-slate-800 pt-3 sm:pt-0 sm:border-none">
+                    <button type="button" onclick="abrirModalNovo()" class="bg-teal-500 active:bg-teal-600 text-slate-900 font-bold px-4 py-2 rounded-xl flex items-center justify-center gap-2 text-sm shadow-md cursor-pointer active:scale-95 duration-100 flex-1 sm:flex-none min-h-[38px]">
+                        <i class="fa-solid fa-plus text-base"></i> <span>Novo Atendimento</span>
+                    </button>
+                    <button type="button" onclick="deslogarUsuario()" class="bg-rose-600 active:bg-rose-700 text-white font-bold w-[38px] h-[38px] rounded-xl flex items-center justify-center shadow-md cursor-pointer active:scale-95 duration-100 shrink-0">
+                        <i class="fa-solid fa-right-from-bracket text-sm"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto px-4 py-4 space-y-4">
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200/80">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Data Início</label>
+                        <input type="date" id="filter-date-start" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Data Fim</label>
+                        <input type="date" id="filter-date-end" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none">
+                    </div>
+                    <div id="container-filter-consultant">
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Consultor Geral</label>
+                        <select id="filter-consultant" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none">
+                            <option value="todos">Todos</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="button" id="btn-reset-filters" class="w-full text-xs font-bold bg-slate-100 py-2.5 rounded-xl text-slate-600"><i class="fa-solid fa-arrow-rotate-left mr-1"></i> Limpar Filtros</button>
+            </div>
+
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <div class="bg-white p-4 rounded-xl border border-slate-200/80"><span class="text-[11px] font-bold text-slate-400 uppercase block">Atendimentos</span><h3 id="kpi-total-atendimentos" class="text-2xl font-bold text-slate-800">0</h3></div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200/80"><span class="text-[11px] font-bold text-slate-400 uppercase block">No Mês</span><h3 id="kpi-mes-atual" class="text-2xl font-bold text-slate-800">0</h3></div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200/80"><span class="text-[11px] font-bold text-slate-400 uppercase block">Orçamentos</span><h3 id="kpi-orcamentos-enviados" class="text-2xl font-bold text-slate-800">0</h3></div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200/80"><span class="text-[11px] font-bold text-slate-400 uppercase block">Conversão</span><h3 id="kpi-taxa-conclusao" class="text-2xl font-bold text-slate-800">0%</h3></div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div class="bg-white p-4 rounded-xl border border-slate-200/80"><h3 class="font-bold text-slate-700 text-xs mb-2">Por Consultor</h3><div class="chart-container"><canvas id="chart-consultores"></canvas></div></div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200/80"><h3 class="font-bold text-slate-700 text-xs mb-2">Por Status</h3><div class="chart-container flex items-center justify-center"><canvas id="chart-status"></canvas></div></div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200/80"><h3 class="font-bold text-slate-700 text-xs mb-2">Por Canal</h3><div class="chart-container"><canvas id="chart-canais"></canvas></div></div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200/80"><h3 class="font-bold text-slate-700 text-xs mb-2">Evolução Diária</h3><div class="chart-container"><canvas id="chart-evolucao"></canvas></div></div>
+            </div>
+
+            <div class="bg-white rounded-xl border border-slate-200/80 overflow-hidden">
+                <div class="p-4 bg-slate-50 border-b border-slate-100 space-y-3">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-slate-700 text-sm">Histórico Detalhado</h3>
+                        <span id="table-row-count" class="text-xs bg-teal-50 text-teal-700 font-bold px-2 py-0.5 rounded-md">0</span>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-magnifying-glass text-xs"></i></span>
+                            <input type="text" id="table-search" placeholder="Buscar cliente ou celular..." class="w-full text-xs bg-white border border-slate-200 rounded-xl pl-9 pr-3 py-2 outline-none focus:border-teal-500">
+                        </div>
+                        <div id="container-table-filter-consultant">
+                            <select id="table-filter-consultant" class="w-full text-xs bg-white border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-teal-500">
+                                <option value="todos">Todos os Consultores</option>
+                            </select>
+                        </div>
+                        <div>
+                            <select id="table-filter-status" class="w-full text-xs bg-white border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-teal-500">
+                                <option value="todos">Todos os Status</option>
+                                <option value="Em atendimento">Em atendimento</option>
+                                <option value="Orçamento Enviado">Orçamento Enviado</option>
+                                <option value="Venda Efetuada">Venda Efetuada</option>
+                                <option value="Encerrado">Encerrado</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table class="w-full text-left text-xs">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-500 font-bold uppercase">
+                                <th class="px-4 py-3">Data</th>
+                                <th class="px-4 py-3 min-w-[140px]">Cliente</th>
+                                <th class="px-4 py-3">Telefone</th>
+                                <th class="px-4 py-3">Canal</th>
+                                <th class="px-4 py-3">Consultor</th>
+                                <th class="px-4 py-3 text-center">Status</th>
+                                <th class="px-4 py-3">Motivo</th>
+                                <th class="px-4 py-3 text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+
+                <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-between items-center text-xs">
+                    <button type="button" id="btn-pag-anterior" class="bg-white border border-slate-200 px-4 py-2 rounded-xl font-bold text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 transition-transform cursor-pointer">◄ Anterior</button>
+                    <span id="txt-paginacao" class="text-slate-500 font-semibold tracking-wide">Página - de -</span>
+                    <button type="button" id="btn-pag-proximo" class="bg-white border border-slate-200 px-4 py-2 rounded-xl font-bold text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 transition-transform cursor-pointer">Próximo ►</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyf3Y5lvdPzUDwcvB6FNP5hkL3C6r0SNh9jXqw-DZiQYPgwFU3iH2deNn2xws42sQlL/exec";
+
+        let dadosTratados = [];
+        let linhaEmEdicao = null; 
+        let paginaAtual = 1;         
+        const itensPorPagina = 10;   
+        let chartConsultoresInstance, chartStatusInstance, chartCanaisInstance, chartEvolucaoInstance;
+        const BASE_ACESSOS = { "Claudia": "2021", "Fabio": "3031", "Maicon": "4041", "Adm": "9999" };
+        let usuarioLogado = "";
+
+        // Registra o plugin de porcentagem globalmente se disponível
+        if (typeof ChartDataLabels !== 'undefined') {
+            Chart.register(ChartDataLabels);
+        }
+
+        // 🚨 CORREÇÃO DA FUNÇÃO DO FILTRO RESET
+        function configurarDatasPadrao() {
+            const hoje = new Date();
+            document.getElementById("filter-date-start").value = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().split('T')[0];
+            document.getElementById("filter-date-end").value = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() + 1).toISOString().split('T')[0];
+        }
+
+        // ===== LOGIN E PRIVACIDADE =====
+        function deslogarUsuario() {
+            usuarioLogado = "";
+            document.getElementById("tela-login").classList.remove("hidden");
+            document.getElementById("formLogin").reset();
+            window.scrollTo(0,0);
+        }
+
+        function autenticarUsuario(event) {
+            event.preventDefault();
+            const usr = document.getElementById("loginUsuario").value;
+            const pin = document.getElementById("loginPin").value;
+            if (BASE_ACESSOS[usr] && BASE_ACESSOS[usr] === pin) {
+                usuarioLogado = usr;
+                document.getElementById("usuario-logado-badge").innerText = usr;
+                document.getElementById("tela-login").classList.add("hidden");
+                
+                const topCont = document.getElementById("container-filter-consultant");
+                const tabCont = document.getElementById("container-table-filter-consultant");
+                const topSel = document.getElementById("filter-consultant");
+                const tabSel = document.getElementById("table-filter-consultant");
+                const modCont = document.getElementById("modal-container-consultor");
+                
+                if (usuarioLogado === "Claudia" || usuarioLogado === "Maicon") {
+                    topCont.classList.add('hidden'); tabCont.classList.add('hidden'); modCont.classList.add('hidden');
+                    topSel.innerHTML = `<option value="${usuarioLogado}">${usuarioLogado}</option>`;
+                    tabSel.innerHTML = `<option value="${usuarioLogado}">${usuarioLogado}</option>`;
+                } else {
+                    topCont.classList.remove('hidden'); tabCont.classList.remove('hidden'); modCont.classList.remove('hidden');
+                    topSel.innerHTML = '<option value="todos">Todos</option>';
+                    tabSel.innerHTML = '<option value="todos">Todos os Consultores</option>';
+                    ["Claudia", "Fabio", "Maicon"].forEach(c => {
+                        topSel.innerHTML += `<option value="${c}">${c}</option>`;
+                        tabSel.innerHTML += `<option value="${c}">${c}</option>`;
+                    });
+                }
+                processarEAtualizarDashboardCompleto(true);
+            } else {
+                document.getElementById("login-erro").classList.remove("hidden");
+            }
+        }
+
+        // ===== MOTIVO CONDICIONAL =====
+        function verificarStatusMotivo() {
+            const status = document.getElementById('novo-status').value;
+            const containerMotivo = document.getElementById('container-motivo');
+            const campoMotivo = document.getElementById('novo-motivo');
+            
+            if (status === "Encerrado") {
+                containerMotivo.classList.remove('hidden');
+                campoMotivo.required = true;
+            } else {
+                containerMotivo.classList.add('hidden');
+                campoMotivo.required = false;
+                campoMotivo.value = ""; 
+            }
+        }
+
+        // ===== MODAL =====
+        function abrirModalNovo() {
+            linhaEmEdicao = null;
+            document.getElementById('modal-novo').classList.remove('hidden');
+            document.getElementById('form-novo').reset();
+            document.getElementById('novo-data').valueAsDate = new Date();
+            verificarStatusMotivo();
+            
+            const campoConsultor = document.getElementById('novo-consultor');
+            if (usuarioLogado === "Claudia" || usuarioLogado === "Maicon") {
+                campoConsultor.value = usuarioLogado;
+            }
+            document.getElementById('btn-salvar-novo').innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Salvar Atendimento';
+        }
+
+        function editarAtendimento(rowId) {
+            const atendimento = dadosTratados.find(d => d.row === rowId);
+            if(!atendimento) return;
+
+            linhaEmEdicao = rowId;
+            document.getElementById('modal-novo').classList.remove('hidden');
+
+            document.getElementById('novo-data').value = atendimento.data;
+            document.getElementById('novo-nome').value = atendimento.nome;
+            document.getElementById('novo-telefone').value = atendimento.telefone;
+            
+            const campoCanal = document.getElementById('novo-canal');
+            campoCanal.value = Array.from(campoCanal.options).some(o => o.value === atendimento.canal) ? atendimento.canal : "Loja";
+
+            document.getElementById('novo-consultor').value = atendimento.consultor;
+            document.getElementById('novo-orcamento').value = atendimento.orcamento === "Sim" ? "Sim" : "Não";
+            
+            document.getElementById('novo-status').value = atendimento.status;
+            verificarStatusMotivo(); 
+            document.getElementById('novo-motivo').value = atendimento.motivo;
+
+            document.getElementById('btn-salvar-novo').innerHTML = '<i class="fa-solid fa-pen-to-square"></i> Atualizar Atendimento';
+        }
+
+        function fecharModalNovo() { document.getElementById('modal-novo').classList.add('hidden'); }
+
+        function salvarNovoAtendimento(event) {
+            event.preventDefault();
+            const btnSalvar = document.getElementById('btn-salvar-novo');
+            btnSalvar.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
+            btnSalvar.disabled = true;
+            
+            const consultorDefinitivo = (usuarioLogado === "Claudia" || usuarioLogado === "Maicon") ? usuarioLogado : document.getElementById('novo-consultor').value;
+            
+            const payload = {
+                row: linhaEmEdicao, 
+                data: document.getElementById('novo-data').value,
+                nome: document.getElementById('novo-nome').value,
+                telefone: document.getElementById('novo-telefone').value,
+                canal: document.getElementById('novo-canal').value,
+                consultor: consultorDefinitivo,
+                orcamento: document.getElementById('novo-orcamento').value,
+                status: document.getElementById('novo-status').value,
+                motivo: document.getElementById('novo-motivo').value
+            };
+
+            fetch(SCRIPT_URL, {
+                method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+            }).then(() => {
+                fecharModalNovo();
+                btnSalvar.disabled = false;
+                setTimeout(() => { carregarDadosDoServidor(); }, 1500); 
+            }).catch(err => {
+                alert("Erro de Conexão!");
+                btnSalvar.disabled = false;
+            });
+        }
+
+        // ===== TRATAMENTO DE MATRIZ =====
+        document.addEventListener("DOMContentLoaded", () => {
+            configurarDatasPadrao();
+            carregarDadosDoServidor();
+        });
+
+        function carregarDadosDoServidor() {
+            window.handleGoogleData = function(data) {
+                document.getElementById("banner-erro").classList.add("hidden");
+                inicializarDashboard(data);
+                document.getElementById('jsonp-bridge')?.remove();
+            };
+            const script = document.createElement('script');
+            script.id = 'jsonp-bridge';
+            script.src = SCRIPT_URL + "?callback=handleGoogleData";
+            script.onerror = () => document.getElementById("banner-erro").classList.remove("hidden");
+            document.body.appendChild(script);
+        }
+
+        function inicializarDashboard(rows) {
+            if (!rows || rows.length < 2) return;
+            const cab = rows[0].map(c => String(c).trim().toLowerCase());
+            
+            const iDat = cab.findIndex(h => h.includes("data"));
+            const iNom = cab.findIndex(h => h.includes("nome"));
+            const iTel = cab.findIndex(h => h.includes("telefone") || h.includes("tel"));
+            const iCan = cab.findIndex(h => h.includes("canal"));
+            const iCon = cab.findIndex(h => h.includes("consultor"));
+            const iOrc = cab.findIndex(h => h.includes("orca") || h.includes("orça"));
+            const iSta = cab.findIndex(h => h.includes("status"));
+            const iMot = cab.findIndex(h => h.includes("motivo") || h.includes("obs"));
+
+            dadosTratados = [];
+            for (let i = 1; i < rows.length; i++) {
+                const col = rows[i];
+                if (!col[0] || col[0] === "") continue;
+
+                let dataForm = String(iDat !== -1 ? col[iDat] : col[0]).trim();
+                if (dataForm.includes("/")) {
+                    const p = dataForm.split("/");
+                    if (p.length === 3) dataForm = `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
+                }
+
+                let statusForm = (iSta !== -1 && col[iSta]) ? String(col[iSta]).trim() : "Em atendimento";
+                if (statusForm.toLowerCase() === "em andamento") statusForm = "Em atendimento";
+
+                dadosTratados.push({
+                    row: i + 1, 
+                    data: dataForm,
+                    nome: String(iNom !== -1 ? col[iNom] : col[1]).trim(),
+                    telefone: iTel !== -1 ? String(col[iTel]).trim() : "",
+                    canal: (iCan !== -1 && col[iCan]) ? String(col[iCan]).trim() : "Loja",
+                    consultor: (iCon !== -1 && col[iCon]) ? String(col[iCon]).trim() : "Sem Consultor",
+                    orcamento: (iOrc !== -1 && col[iOrc]) ? String(col[iOrc]).trim() : "Não",
+                    status: statusForm,
+                    motivo: iMot !== -1 ? String(col[iMot]) : ""
+                });
+            }
+
+            // ORDENAÇÃO MATEMÁTICA RIGOROSA (DO MAIS NOVO PARA O MAIS ANTIGO)
+            dadosTratados.sort((a, b) => {
+                if (a.data > b.data) return -1;
+                if (a.data < b.data) return 1;
+                return b.row - a.row;
+            });
+
+            ["filter-date-start", "filter-date-end", "filter-consultant", "table-filter-consultant", "table-filter-status"].forEach(id => {
+                document.getElementById(id).removeEventListener("change", () => processarEAtualizarDashboardCompleto(true));
+                document.getElementById(id).addEventListener("change", () => processarEAtualizarDashboardCompleto(true));
+            });
+            
+            document.getElementById("table-search").removeEventListener("input", () => processarEAtualizarDashboardCompleto(true));
+            document.getElementById("table-search").addEventListener("input", () => processarEAtualizarDashboardCompleto(true));
+            
+            document.getElementById("btn-reset-filters").onclick = () => { configurarDatasPadrao(); processarEAtualizarDashboardCompleto(true); };
+            
+            if (usuarioLogado !== "") processarEAtualizarDashboardCompleto(true);
+        }
+
+        // ===== PROCESSAMENTO GERAL =====
+        function processarEAtualizarDashboardCompleto(resetarPagina = true) {
+            if (usuarioLogado === "") return;
+            if (resetarPagina) paginaAtual = 1;
+            
+            const start = document.getElementById("filter-date-start").value;
+            const end = document.getElementById("filter-date-end").value;
+            let filterCons = document.getElementById("filter-consultant").value;
+            if (usuarioLogado === "Claudia" || usuarioLogado === "Maicon") filterCons = usuarioLogado;
+
+            const searchTxt = document.getElementById("table-search").value.trim().toLowerCase();
+            let tableCons = document.getElementById("table-filter-consultant").value;
+            if (usuarioLogado === "Claudia" || usuarioLogado === "Maicon") tableCons = usuarioLogado;
+            const tableStat = document.getElementById("table-filter-status").value;
+
+            // GRÁFICOS E KPIs
+            const filtradosGraficos = dadosTratados.filter(d => (start ? d.data >= start : true) && (end ? d.data <= end : true) && (filterCons === "todos" ? true : d.consultor === filterCons));
+
+            document.getElementById("kpi-total-atendimentos").innerText = filtradosGraficos.length;
+            document.getElementById("kpi-mes-atual").innerText = filtradosGraficos.length;
+            document.getElementById("kpi-orcamentos-enviados").innerText = filtradosGraficos.filter(d => d.orcamento.toLowerCase() === "sim").length;
+            document.getElementById("kpi-taxa-conclusao").innerText = `${filtradosGraficos.length > 0 ? Math.round((filtradosGraficos.filter(d => d.status === "Venda Efetuada").length / filtradosGraficos.length) * 100) : 0}%`;
+
+            renderizarGraficos(filtradosGraficos);
+
+            // FILTRAGEM DA TABELA
+            let filtradosTabela = dadosTratados.filter(d => {
+                if (searchTxt !== "") {
+                    const bateNome = d.nome.toLowerCase().includes(searchTxt);
+                    const bateTel = d.telefone.toLowerCase().includes(searchTxt);
+                    if (!bateNome && !bateTel) return false;
+                } else {
+                    if (start && d.data < start) return false;
+                    if (end && d.data > end) return false;
+                }
+                if (tableCons !== "todos" && d.consultor !== tableCons) return false;
+                if (tableStat !== "todos" && d.status !== tableStat) return false;
+                return true;
+            });
+
+            renderizarTabela(filtradosTabela);
+        }
+
+        // ===== RENDERIZAÇÃO DA TABELA COM PAGINAÇÃO =====
+        function renderizarTabela(dados) {
+            const tbody = document.getElementById("table-body");
+            tbody.innerHTML = "";
+            
+            const totalItens = dados.length;
+            document.getElementById("table-row-count").innerText = totalItens;
+            
+            const totalPaginas = Math.ceil(totalItens / itensPorPagina) || 1;
+            if (paginaAtual > totalPaginas) paginaAtual = totalPaginas;
+            
+            const inicio = (paginaAtual - 1) * itensPorPagina;
+            const fim = inicio + itensPorPagina;
+            const dadosPaginados = dados.slice(inicio, fim);
+            
+            if (dadosPaginados.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="px-4 py-4 text-center text-slate-400 italic">Nenhum registro localizado.</td></tr>`;
+                document.getElementById("txt-paginacao").innerText = `Página 1 de 1`;
+                document.getElementById("btn-pag-anterior").disabled = true;
+                document.getElementById("btn-pag-proximo").disabled = true;
+                return;
+            }
+            
+            dadosPaginados.forEach(item => {
+                const tr = document.createElement("tr");
+                let stClass = "bg-blue-50 text-blue-700 border border-blue-100";
+                
+                if(item.status === "Venda Efetuada") stClass = "bg-emerald-50 text-emerald-700 border border-emerald-100";
+                if(item.status === "Encerrado") stClass = "bg-rose-50 text-rose-700 border border-rose-200";
+                if(item.status === "Orçamento Enviado") stClass = "bg-amber-50 text-amber-700 border border-amber-200";
+                
+                const dataExibicao = item.data.split("-").reverse().join("/");
+                
+                tr.innerHTML = `
+                    <td class="px-4 py-3 text-slate-500 whitespace-nowrap">${dataExibicao}</td>
+                    <td class="px-4 py-3 font-bold whitespace-nowrap">${item.nome}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-slate-600">${item.telefone || '-'}</td>
+                    <td class="px-4 py-3 whitespace-nowrap">${item.canal}</td>
+                    <td class="px-4 py-3 whitespace-nowrap">${item.consultor}</td>
+                    <td class="px-4 py-3 text-center whitespace-nowrap"><span class="px-2 py-0.5 rounded-full text-[11px] font-medium ${stClass}">${item.status}</span></td>
+                    <td class="px-4 py-3 whitespace-nowrap text-slate-500 max-w-[150px] truncate" title="${item.motivo}">${item.motivo || '-'}</td>
+                    <td class="px-4 py-3 text-center whitespace-nowrap">
+                        <button type="button" onclick="editarAtendimento(${item.row})" class="bg-teal-50 hover:bg-teal-600 text-teal-700 hover:text-white border border-teal-200 font-bold px-3 py-1.5 rounded-xl transition-all cursor-pointer active:scale-95 text-[11px]">
+                            <i class="fa-solid fa-pen-to-square mr-1"></i>Editar
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById("txt-paginacao").innerText = `Página ${paginaAtual} de ${totalPaginas}`;
+            document.getElementById("btn-pag-anterior").disabled = (paginaAtual === 1);
+            document.getElementById("btn-pag-proximo").disabled = (paginaAtual === totalPaginas);
+            
+            document.getElementById("btn-pag-anterior").onclick = () => {
+                if (paginaAtual > 1) { paginaAtual--; processarEAtualizarDashboardCompleto(false); }
+            };
+            document.getElementById("btn-pag-proximo").onclick = () => {
+                if (paginaAtual < totalPaginas) { paginaAtual++; processarEAtualizarDashboardCompleto(false); }
+            };
+        }
+
+        // ===== GRÁFICOS COM BLINDAGEM DE ERRO =====
+        function renderizarGraficos(dados) {
+            const cCons = {}, cStat = {}, cCan = {}, cData = {};
+            dados.forEach(d => { 
+                cCons[d.consultor] = (cCons[d.consultor] || 0) + 1; 
+                cStat[d.status] = (cStat[d.status] || 0) + 1; 
+                cCan[d.canal] = (cCan[d.canal] || 0) + 1; 
+                cData[d.data] = (cData[d.data] || 0) + 1; 
+            });
+
+            const optBarras = { responsive: true, maintainAspectRatio: false, plugins: { legend: false }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 10 } } }, x: { ticks: { font: { size: 10 } } } } };
+
+            if (chartConsultoresInstance) chartConsultoresInstance.destroy();
+            chartConsultoresInstance = new Chart(document.getElementById('chart-consultores').getContext('2d'), { type: 'bar', data: { labels: Object.keys(cCons), datasets: [{ data: Object.values(cCons), backgroundColor: '#3b82f6', borderRadius: 4 }] }, options: optBarras });
+            
+            // 🚨 BLINDAGEM DO GRÁFICO DE ROSCA CONTRA CRASHES
+            try {
+                if (chartStatusInstance) chartStatusInstance.destroy();
+                chartStatusInstance = new Chart(document.getElementById('chart-status').getContext('2d'), { 
+                    type: 'doughnut', 
+                    data: { labels: Object.keys(cStat), datasets: [{ data: Object.values(cStat), backgroundColor: ['#10b981', '#3b82f6', '#ef4444', '#f59e0b', '#64748b'] }] }, 
+                    options: { 
+                        cutout: '65%', 
+                        responsive: true, 
+                        maintainAspectRatio: false, 
+                        plugins: { 
+                            legend: { display: true, position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } },
+                            datalabels: {
+                                color: '#fff',
+                                font: { weight: 'bold', size: 10 },
+                                formatter: (value, ctx) => {
+                                    let total = 0;
+                                    let dataset = ctx.chart.data.datasets[0].data;
+                                    dataset.forEach(val => total += val);
+                                    return total > 0 ? ((value / total) * 100).toFixed(0) + '%' : '0%';
+                                }
+                            }
+                        } 
+                    } 
+                });
+            } catch (error) {
+                console.error("Aviso: Falha ao carregar plugin de rótulos do gráfico.", error);
+            }
+            
+            if (chartCanaisInstance) chartCanaisInstance.destroy();
+            chartCanaisInstance = new Chart(document.getElementById('chart-canais').getContext('2d'), { type: 'bar', data: { labels: Object.keys(cCan), datasets: [{ data: Object.values(cCan), backgroundColor: '#0f766e', borderRadius: 4 }] }, options: optBarras });
+            
+            const dOrd = Object.keys(cData).sort();
+            if (chartEvolucaoInstance) chartEvolucaoInstance.destroy();
+            chartEvolucaoInstance = new Chart(document.getElementById('chart-evolucao').getContext('2d'), { type: 'line', data: { labels: dOrd.map(d => d.split("-").slice(1,3).reverse().join("/")), datasets: [{ data: dOrd.map(d => cData[d]), borderColor: '#10b981', fill: false, tension: 0.2 }] }, options: optBarras });
+        }
+    </script>
+</body>
+</html>

@@ -214,7 +214,7 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div class="bg-white p-4 rounded-xl border border-slate-200/80"><h3 class="font-bold text-slate-700 text-xs mb-2">Por Consultor</h3><div class="chart-container"><canvas id="chart-consultores"></canvas></div></div>
-                <div class="bg-white p-4 rounded-xl border border-slate-200/80"><h3 class="font-bold text-slate-700 text-xs mb-2">Por Status</h3><div class="chart-container flex items-center justify-center"><canvas id="chart-status" style="max-width: 200px; max-height: 200px;"></canvas></div></div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200/80"><h3 class="font-bold text-slate-700 text-xs mb-2">Por Status</h3><div class="chart-container"><canvas id="chart-status"></canvas></div></div>
                 <div class="bg-white p-4 rounded-xl border border-slate-200/80"><h3 class="font-bold text-slate-700 text-xs mb-2">Por Canal</h3><div class="chart-container"><canvas id="chart-canais"></canvas></div></div>
                 <div class="bg-white p-4 rounded-xl border border-slate-200/80"><h3 class="font-bold text-slate-700 text-xs mb-2">Motivos de Encerramento</h3><div class="chart-container"><canvas id="chart-motivos"></canvas></div></div>
             </div>
@@ -406,7 +406,7 @@
             const consultorDefinitivo = (usuarioLogado === "Claudia" || usuarioLogado === "Maicon") ? usuarioLogado : document.getElementById('novo-consultor').value;
             
             const payload = {
-                row: AppLinhaEmEdicao, 
+                row: linhaEmEdicao, 
                 data: document.getElementById('novo-data').value,
                 nome: document.getElementById('novo-nome').value,
                 telefone: document.getElementById('novo-telefone').value,
@@ -443,6 +443,8 @@
             document.getElementById("table-search").addEventListener("input", () => {
                 processarEAtualizarDashboardCompleto(true);
             });
+            
+            document.getElementById("btn-reset-filters").onclick = () => { configurarDatasPadrao(); processarEAtualizarDashboardCompleto(true); };
         });
 
         function carregarDadosDoServidor() {
@@ -608,11 +610,9 @@
             };
         }
 
-        // ===== 🚨 ENGINE DE RE-ESTILIZAÇÃO DOS GRÁFICOS (SUGESTÃO 1) =====
         function renderizarGraficos(dados) {
             const cCons = {}, cStat = {}, cCan = {}, cData = {}, cMot = {};
             
-            // Força a existência de todos os motivos padrão no dicionário para manter a ordem e robustez das barras
             const motivosPadrao = ["Não resp.", "Preço", "Prazo", "Curioso", "Produto Indisp."];
             motivosPadrao.forEach(m => cMot[m] = 0);
 
@@ -623,7 +623,6 @@
                 cData[d.data] = (cData[d.data] || 0) + 1;
                 
                 if (d.status === "Encerrado" && d.motivo && d.motivo !== "") {
-                    // Mapeia e incrementa o motivo se bater com a lista tratada
                     let mTratado = d.motivo;
                     if (mTratado.includes("responder")) mTratado = "Não resp.";
                     if (mTratado.includes("Preço") || mTratado.includes("orçamento")) mTratado = "Preço";
@@ -639,13 +638,12 @@
                 }
             });
 
-            // 🚨 CONFIGURAÇÃO DE BARRAS ENCORPADAS (SUGESTÃO 1): Ocupam 85% do espaço total da categoria
             const optVerticaisClean = { 
                 responsive: true, 
                 maintainAspectRatio: false, 
                 layout: { padding: { top: 25, left: 10, right: 10 } }, 
-                barPercentage: 0.85,          // Engorda as barras significativamente
-                categoryPercentage: 0.85,     // Aproxima as barras eliminando vácuos brancos
+                barPercentage: 0.85,          
+                categoryPercentage: 0.85,     
                 scales: { 
                     y: { beginAtZero: true, grid: { display: false }, ticks: { display: false }, border: { display: false } }, 
                     x: { grid: { display: false }, ticks: { font: { size: 10, weight: '600' } }, border: { display: false } } 
@@ -665,26 +663,29 @@
                 plugins: [ChartDataLabels] 
             });
             
-            // Chart 2: Status (🚨 Legenda Linear Travada em 1 Linha com espaçamento ideal)
+            // 🚨 CORREÇÃO DO CHART 2: Status (Rosca Expandida com Rótulo + Porcentagem embutidos)
             if (chartStatusInstance) chartStatusInstance.destroy();
             chartStatusInstance = new Chart(document.getElementById('chart-status').getContext('2d'), { 
                 type: 'doughnut', 
-                data: { labels: Object.keys(cStat), datasets: [{ data: Object.values(cStat), backgroundColor: ['#10b981', '#3b82f6', '#ef4444', '#f59e0b', '#64748b'] }] }, 
+                data: { labels: Object.keys(cStat), datasets: [{ data: Object.values(cStat), backgroundColor: ['#10b981', '#3b82f6', '#ef4444', '#f59e0b', '#64748b'], borderWidth: 2 }] }, 
                 options: { 
-                    cutout: '65%', responsive: true, maintainAspectRatio: false, layout: { padding: 5 },
+                    cutout: '50%', // Reduzido para engrossar a fatia e caber o texto
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    layout: { padding: 10 },
                     plugins: { 
-                        legend: { 
-                            display: true, 
-                            position: 'bottom', 
-                            labels: { boxWidth: 10, padding: 20, font: { size: 10, weight: '500' } } 
-                        },
+                        legend: { display: false }, // Legenda externa removida
                         datalabels: {
-                            color: '#fff', font: { weight: 'bold', size: 10 },
+                            color: '#fff', 
+                            font: { weight: 'bold', size: 10 },
+                            textAlign: 'center', // Centraliza o texto quebrado em linhas
                             formatter: (value, ctx) => {
                                 let total = 0;
                                 let dataset = ctx.chart.data.datasets[0].data;
                                 dataset.forEach(val => total += val);
-                                return total > 0 ? ((value / total) * 100).toFixed(0) + '%' : '0%';
+                                let percent = total > 0 ? ((value / total) * 100).toFixed(0) + '%' : '0%';
+                                let labelName = ctx.chart.data.labels[ctx.dataIndex];
+                                return labelName + '\n' + percent; // Quebra a linha entre nome e %
                             }
                         }
                     } 
@@ -701,7 +702,7 @@
                 plugins: [ChartDataLabels] 
             });
             
-            // Chart 4: Motivos de Encerramento (Horizontal Encorpado)
+            // Chart 4: Motivos de Encerramento
             if (chartMotivosInstance) chartMotivosInstance.destroy();
             chartMotivosInstance = new Chart(document.getElementById('chart-motivos').getContext('2d'), { 
                 type: 'bar', 
@@ -723,7 +724,7 @@
                 plugins: [ChartDataLabels] 
             });
 
-            // Chart 5: Evolução Diária (Clean e Alongado no Rodapé)
+            // Chart 5: Evolução Diária
             const dOrd = Object.keys(cData).sort();
             if (chartEvolucaoInstance) chartEvolucaoInstance.destroy();
             chartEvolucaoInstance = new Chart(document.getElementById('chart-evolucao').getContext('2d'), { 

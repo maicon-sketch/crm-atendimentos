@@ -32,6 +32,7 @@
 </head>
 <body class="text-slate-800 antialiased relative md:select-text">
 
+    <!-- TELA DE LOGIN -->
     <div id="tela-login" class="fixed inset-0 bg-slate-900/90 backdrop-blur-md flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-sm p-6 space-y-4">
             <div class="text-center space-y-1">
@@ -69,6 +70,7 @@
         </div>
     </div>
 
+    <!-- MODAL DE FORMULÁRIO (NOVO / EDITAR) -->
     <div id="modal-novo" class="fixed inset-0 bg-slate-900/90 backdrop-blur-sm flex items-center justify-center z-50 p-4 hidden">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md flex flex-col max-h-[90vh] overflow-hidden">
             <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
@@ -156,10 +158,12 @@
         </div>
     </div>
 
+    <!-- BANNER DE ERRO DE CONEXÃO -->
     <div id="banner-erro" class="bg-rose-600 text-white px-4 py-3 text-center text-xs font-bold hidden sticky top-0 z-50 shadow-md">
         <i class="fa-solid fa-triangle-exclamation mr-1"></i> Falha ao conectar. Atualizando...
     </div>
 
+    <!-- CONTEÚDO PRINCIPAL DO DASHBOARD -->
     <div>
         <header class="bg-slate-900 text-white shadow-md sticky top-0 z-40">
             <div class="max-w-7xl mx-auto px-4 py-3.5 flex flex-col sm:flex-row justify-between items-center gap-3">
@@ -186,6 +190,7 @@
 
         <main class="max-w-7xl mx-auto px-4 py-4 space-y-4">
             
+            <!-- FILTROS GLOBAIS -->
             <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200/80">
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
                     <div>
@@ -206,6 +211,7 @@
                 <button type="button" id="btn-reset-filters" class="w-full text-xs font-bold bg-slate-100 py-2.5 rounded-xl text-slate-600"><i class="fa-solid fa-arrow-rotate-left mr-1"></i> Limpar Filtros</button>
             </div>
 
+            <!-- KPIs -->
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 <div class="bg-white p-4 rounded-xl border border-slate-200/80"><span class="text-[11px] font-bold text-slate-400 uppercase block">Atendimentos</span><h3 id="kpi-total-atendimentos" class="text-2xl font-bold text-slate-800">0</h3></div>
                 <div class="bg-white p-4 rounded-xl border border-slate-200/80"><span class="text-[11px] font-bold text-slate-400 uppercase block">No Mês</span><h3 id="kpi-mes-atual" class="text-2xl font-bold text-slate-800">0</h3></div>
@@ -213,6 +219,7 @@
                 <div class="bg-white p-4 rounded-xl border border-slate-200/80"><span class="text-[11px] font-bold text-slate-400 uppercase block">Conversão</span><h3 id="kpi-taxa-conclusao" class="text-2xl font-bold text-slate-800">0%</h3></div>
             </div>
 
+            <!-- DESTAQUE CENTRAL: FUNIL GLOBAL DE VENDAS HORIZONTAL DEITADO -->
             <div class="bg-white p-5 rounded-xl border border-slate-200/80 space-y-4">
                 <div class="flex justify-between items-center border-b border-slate-100 pb-3">
                     <h3 class="font-bold text-slate-700 flex items-center gap-2 text-sm sm:text-base"><i class="fa-solid fa-filter-circle-dollar text-orange-500"></i> Funil Global de Vendas</h3>
@@ -220,6 +227,7 @@
                 <div class="chart-container" style="height: 220px;"><canvas id="chart-funil"></canvas></div>
             </div>
 
+            <!-- GRADE DE GRÁFICOS SECUNDÁRIOS (2x2) -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div class="bg-white p-4 rounded-xl border border-slate-200/80"><h3 class="font-bold text-slate-700 text-xs mb-2">Por Consultor</h3><div class="chart-container"><canvas id="chart-consultores"></canvas></div></div>
                 <div class="bg-white p-4 rounded-xl border border-slate-200/80"><h3 class="font-bold text-slate-700 text-xs mb-2">Por Status</h3><div class="chart-container flex items-center justify-center"><canvas id="chart-status"></canvas></div></div>
@@ -227,11 +235,13 @@
                 <div class="bg-white p-4 rounded-xl border border-slate-200/80"><h3 class="font-bold text-slate-700 text-xs mb-2">Motivos de Encerramento</h3><div class="chart-container"><canvas id="chart-motivos"></canvas></div></div>
             </div>
 
+            <!-- GRÁFICO EVOLUÇÃO DIÁRIA -->
             <div class="bg-white p-4 rounded-xl border border-slate-200/80 w-full">
                 <h3 class="font-bold text-slate-700 text-xs mb-2">Evolução Diária</h3>
                 <div class="chart-container" style="height: 180px;"><canvas id="chart-evolucao"></canvas></div>
             </div>
 
+            <!-- HISTÓRICO DE DADOS COM PAGINAÇÃO -->
             <div class="bg-white rounded-xl border border-slate-200/80 overflow-hidden">
                 <div class="p-4 bg-slate-50 border-b border-slate-100 space-y-3">
                     <div class="flex justify-between items-center">
@@ -260,6 +270,7 @@
                     </div>
                 </div>
 
+                <!-- TABELA DE RESULTADOS -->
                 <div class="table-container">
                     <table class="w-full text-left text-xs">
                         <thead>
@@ -278,6 +289,7 @@
                     </table>
                 </div>
 
+                <!-- CONTROLES DE PAGINAÇÃO -->
                 <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-between items-center text-xs">
                     <button type="button" id="btn-pag-anterior" class="bg-white border border-slate-200 px-4 py-2 rounded-xl font-bold text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 transition-transform cursor-pointer">◄ Anterior</button>
                     <span id="txt-paginacao" class="text-slate-500 font-semibold tracking-wide">Página - de -</span>
@@ -287,6 +299,7 @@
         </main>
     </div>
 
+    <!-- ===== MOTOR DE INTELIGÊNCIA JAVASCRIPT ===== -->
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyf3Y5lvdPzUDwcvB6FNP5hkL3C6r0SNh9jXqw-DZiQYPgwFU3iH2deNn2xws42sQlL/exec"; 
 
@@ -441,7 +454,7 @@
             configurarDatasPadrao();
             
             if (typeof google !== 'undefined' && google.script && google.script.run) {
-                google.script.run.withSuccessHandler(inicializarDashboard).puxarDadosPlanilha();
+                google.script.run.withSuccessHandler(inicial原始Dashboard).puxarDadosPlanilha();
             } else {
                 carregarDadosDoServidor();
             }
@@ -624,9 +637,11 @@
             };
         }
 
+        // ================= MOTOR DE CHART.JS (CORRIGIDO E APERFEIÇOADO) =================
         function renderizarGraficos(dados) {
             const cCons = {}, cStat = {}, cCanTotal = {}, cCanVendas = {}, cCanOrcamentos = {}, cData = {}, cMot = {};
             
+            // Variáveis de escopo do Funil Estrito de 4 Etapas
             let fAtendimentos = 0, fQualificados = 0, fOrcamentos = 0, fVendas = 0;
 
             const motivosPadrao = ["Não resp.", "Preço", "Prazo", "Curioso", "Produto Indisp."];
@@ -655,11 +670,11 @@
                     cMot[mTratado] = (cMot[mTratado] || 0) + 1;
                 }
 
-                // LÓGICA TRUE WATERFALL REVISADA (4 ETAPAS PROTEGIDAS)
+                // 🚨 LÓGICA TRUE WATERFALL REVISADA COM PRODUTO INDISPONÍVEL EM DESCARTE (4 ETAPAS)
                 fAtendimentos++; 
 
-                let passouPeloOrcamento = (d.orcamento === "Sim" || d.orcamento === "sim" || d.status === "Orçamento Enviado" || d.status === "Venda Efetuada");
-                let realCurioso = (d.status === "Encerrado" && (mTratado === "Curioso" || mTratado === "Não resp."));
+                var passouPeloOrcamento = (d.orcamento === "Sim" || d.orcamento === "sim" || d.status === "Orçamento Enviado" || d.status === "Venda Efetuada");
+                var leadNaoQualificado = (d.status === "Encerrado" && (mTratado === "Curioso" || mTratado === "Não resp." || mTratado === "Produto Indisp."));
 
                 if (d.status === "Venda Efetuada") {
                     fVendas++;
@@ -670,7 +685,7 @@
                     fOrcamentos++;
                     fQualificados++;
                 } 
-                else if (!realCurioso) {
+                else if (!leadNaoQualificado) {
                     fQualificados++;
                 }
             });
@@ -748,7 +763,7 @@
                 }, plugins: [ChartDataLabels] 
             });
             
-            // ========== 4. GRÁFICO POR CANAL (CORREÇÃO DA SINTAXE) ==========
+            // ========== 4. GRÁFICO POR CANAL (CORRIGIDO) ==========
             const labelsCanal = Object.keys(cCanTotal);
             const dataVolumeCanal = Object.values(cCanTotal);
             const dataOrcamentosCanal = labelsCanal.map(function(canal) { return cCanOrcamentos[canal] || 0; }); 

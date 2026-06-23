@@ -288,7 +288,6 @@
     </div>
 
     <script>
-        // LINK DO GOOGLE APPS SCRIPT
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyf3Y5lvdPzUDwcvB6FNP5hkL3C6r0SNh9jXqw-DZiQYPgwFU3iH2deNn2xws42sQlL/exec"; 
 
         let dadosTratados = [];
@@ -625,7 +624,6 @@
             };
         }
 
-        // ================= MOTOR DE CHART.JS (O CORAÇÃO DO BI VISUAL) =================
         function renderizarGraficos(dados) {
             const cCons = {}, cStat = {}, cCanTotal = {}, cCanVendas = {}, cCanOrcamentos = {}, cData = {}, cMot = {};
             
@@ -635,7 +633,6 @@
             motivosPadrao.forEach(m => cMot[m] = 0);
 
             dados.forEach(d => { 
-                
                 cCons[d.consultor] = (cCons[d.consultor] || 0) + 1; 
                 cStat[d.status] = (cStat[d.status] || 0) + 1; 
                 cData[d.data] = (cData[d.data] || 0) + 1;
@@ -644,12 +641,8 @@
                 cCanVendas[d.canal] = cCanVendas[d.canal] || 0;
                 cCanOrcamentos[d.canal] = cCanOrcamentos[d.canal] || 0;
 
-                if (d.status === "Venda Efetuada") {
-                    cCanVendas[d.canal]++;
-                }
-                if (d.orcamento === "Sim" || d.orcamento === "sim") {
-                    cCanOrcamentos[d.canal]++;
-                }
+                if (d.status === "Venda Efetuada") cCanVendas[d.canal]++;
+                if (d.orcamento === "Sim" || d.orcamento === "sim") cCanOrcamentos[d.canal]++;
 
                 let mTratado = d.motivo || "";
                 if (mTratado.includes("responder")) mTratado = "Não resp.";
@@ -662,7 +655,7 @@
                     cMot[mTratado] = (cMot[mTratado] || 0) + 1;
                 }
 
-                // 🚨 Lógica de Inteligência do Funil Global (Estrito - Efeito Cascata Obrigatório)
+                // Lógica de Inteligência do Funil Global (Estrito - Efeito Cascata Obrigatório)
                 fAtendimentos++; 
 
                 let ignorado = (d.status === "Encerrado" && (mTratado === "Curioso" || mTratado === "Não resp."));
@@ -696,7 +689,7 @@
             };
 
             // ========== RENDERIZAÇÃO: DESTAQUE TOPO ==========
-            // Chart 0: Funil Global de Vendas (Com visualização grudada)
+            // Chart 0: Funil Global de Vendas (Barras grudadas controladas pelo eixo X)
             if (chartFunilInstance) chartFunilInstance.destroy();
             chartFunilInstance = new Chart(document.getElementById('chart-funil').getContext('2d'), { 
                 type: 'bar', 
@@ -705,17 +698,21 @@
                     datasets: [{
                         data: [fAtendimentos, fQualificados, fOrcamentos, fNegociacoes, fVendas],
                         backgroundColor: ['#94a3b8', '#38bdf8', '#fbbf24', '#a78bfa', '#10b981'], 
-                        borderRadius: 2, 
-                        // Remove o espaçamento entre as barras para criar o formato de Funil/Pirâmide
-                        barPercentage: 1.0, 
-                        categoryPercentage: 1.0
+                        borderRadius: 2
                     }] 
                 }, 
                 options: {
                     responsive: true, maintainAspectRatio: false, layout: { padding: { top: 30, left: 10, right: 10, bottom: 5 } }, 
                     scales: { 
                         y: { display: false, beginAtZero: true, suggestedMax: fAtendimentos * 1.15 },
-                        x: { grid: { display: false }, ticks: { font: { size: 11, weight: 'bold' } }, border: { display: false } } 
+                        x: { 
+                            grid: { display: false }, 
+                            ticks: { font: { size: 11, weight: 'bold' } }, 
+                            border: { display: false },
+                            // Bloqueia as folgas no eixo X para as barras grudarem como degraus
+                            barPercentage: 1.0, 
+                            categoryPercentage: 1.0
+                        } 
                     },
                     plugins: { 
                         legend: { display: false },
@@ -729,7 +726,6 @@
                     }
                 }, plugins: [ChartDataLabels] 
             });
-
 
             // ========== RENDERIZAÇÃO: GRADE 2x2 ==========
             if (chartConsultoresInstance) chartConsultoresInstance.destroy();
@@ -753,6 +749,7 @@
                 }, plugins: [ChartDataLabels] 
             });
             
+            // CORREÇÃO: Variável do loop mapeada sem sobrescrever a si mesma
             const labelsCanal = Object.keys(cCanTotal);
             const dataVolumeCanal = Object.values(cCanTotal);
             const dataOrcamentosCanal = labelsCanal.map(canal => cCanOrcamentos[canal] || 0);
@@ -792,7 +789,6 @@
                 }, plugins: [ChartDataLabels] 
             });
 
-            // ========== RENDERIZAÇÃO: EVOLUÇÃO ==========
             const dOrd = Object.keys(cData).sort();
             if (chartEvolucaoInstance) chartEvolucaoInstance.destroy();
             chartEvolucaoInstance = new Chart(document.getElementById('chart-evolucao').getContext('2d'), { 

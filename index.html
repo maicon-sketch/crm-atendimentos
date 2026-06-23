@@ -10,6 +10,7 @@
     <meta name="apple-mobile-web-app-title" content="CRM Atendimentos">
     <meta name="theme-color" content="#0f172a"> 
     
+    <!-- Bibliotecas Essenciais -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
@@ -32,7 +33,7 @@
 </head>
 <body class="text-slate-800 antialiased relative md:select-text">
 
-    <!-- LOGIN -->
+    <!-- MODAL DE LOGIN -->
     <div id="tela-login" class="fixed inset-0 bg-slate-900/90 backdrop-blur-md flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-sm p-6 space-y-4">
             <div class="text-center space-y-1">
@@ -70,7 +71,7 @@
         </div>
     </div>
 
-    <!-- MODAL (NOVO / EDITAR) -->
+    <!-- MODAL DE FORMULÁRIO (NOVO / EDITAR) -->
     <div id="modal-novo" class="fixed inset-0 bg-slate-900/90 backdrop-blur-sm flex items-center justify-center z-50 p-4 hidden">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md flex flex-col max-h-[90vh] overflow-hidden">
             <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
@@ -158,12 +159,12 @@
         </div>
     </div>
 
-    <!-- BANNER DE ERRO -->
+    <!-- BANNER DE ERRO DE CONEXÃO -->
     <div id="banner-erro" class="bg-rose-600 text-white px-4 py-3 text-center text-xs font-bold hidden sticky top-0 z-50 shadow-md">
-        <i class="fa-solid fa-triangle-exclamation mr-1"></i> Falha ao conectar. Atualizando...
+        <i class="fa-solid fa-triangle-exclamation mr-1"></i> Falha ao conectar ao Google Sheets. Verifique a URL do SCRIPT_URL.
     </div>
 
-    <!-- CONTEÚDO PRINCIPAL -->
+    <!-- CONTEÚDO PRINCIPAL DO DASHBOARD -->
     <div>
         <header class="bg-slate-900 text-white shadow-md sticky top-0 z-40">
             <div class="max-w-7xl mx-auto px-4 py-3.5 flex flex-col sm:flex-row justify-between items-center gap-3">
@@ -189,6 +190,7 @@
         </header>
 
         <main class="max-w-7xl mx-auto px-4 py-4 space-y-4">
+            
             <!-- FILTROS GLOBAIS -->
             <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200/80">
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
@@ -210,7 +212,7 @@
                 <button type="button" id="btn-reset-filters" class="w-full text-xs font-bold bg-slate-100 py-2.5 rounded-xl text-slate-600"><i class="fa-solid fa-arrow-rotate-left mr-1"></i> Limpar Filtros</button>
             </div>
 
-            <!-- KPIs -->
+            <!-- KPIs (INDICADORES DE PERFORMANCE) -->
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 <div class="bg-white p-4 rounded-xl border border-slate-200/80"><span class="text-[11px] font-bold text-slate-400 uppercase block">Atendimentos</span><h3 id="kpi-total-atendimentos" class="text-2xl font-bold text-slate-800">0</h3></div>
                 <div class="bg-white p-4 rounded-xl border border-slate-200/80"><span class="text-[11px] font-bold text-slate-400 uppercase block">No Mês</span><h3 id="kpi-mes-atual" class="text-2xl font-bold text-slate-800">0</h3></div>
@@ -218,10 +220,18 @@
                 <div class="bg-white p-4 rounded-xl border border-slate-200/80"><span class="text-[11px] font-bold text-slate-400 uppercase block">Conversão</span><h3 id="kpi-taxa-conclusao" class="text-2xl font-bold text-slate-800">0%</h3></div>
             </div>
 
-            <!-- GRADE DE GRÁFICOS (2x2) -->
+            <!-- DESTAQUE CENTRAL: FUNIL GLOBAL DE VENDAS -->
+            <div class="bg-white p-5 rounded-xl border border-slate-200/80 space-y-4">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                    <h3 class="font-bold text-slate-700 flex items-center gap-2 text-sm sm:text-base"><i class="fa-solid fa-filter-circle-dollar text-orange-500"></i> Funil Global de Vendas</h3>
+                </div>
+                <div class="chart-container" style="height: 220px;"><canvas id="chart-funil"></canvas></div>
+            </div>
+
+            <!-- GRADE DE GRÁFICOS SECUNDÁRIOS (2x2) -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div class="bg-white p-4 rounded-xl border border-slate-200/80"><h3 class="font-bold text-slate-700 text-xs mb-2">Por Consultor</h3><div class="chart-container"><canvas id="chart-consultores"></canvas></div></div>
-                <div class="bg-white p-4 rounded-xl border border-slate-200/80"><h3 class="font-bold text-slate-700 text-xs mb-2">Por Status</h3><div class="chart-container"><canvas id="chart-status"></canvas></div></div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200/80"><h3 class="font-bold text-slate-700 text-xs mb-2">Por Status</h3><div class="chart-container flex items-center justify-center"><canvas id="chart-status"></canvas></div></div>
                 <div class="bg-white p-4 rounded-xl border border-slate-200/80"><h3 class="font-bold text-slate-700 text-xs mb-2">Por Canal (Conversão)</h3><div class="chart-container"><canvas id="chart-canais"></canvas></div></div>
                 <div class="bg-white p-4 rounded-xl border border-slate-200/80"><h3 class="font-bold text-slate-700 text-xs mb-2">Motivos de Encerramento</h3><div class="chart-container"><canvas id="chart-motivos"></canvas></div></div>
             </div>
@@ -232,7 +242,7 @@
                 <div class="chart-container" style="height: 180px;"><canvas id="chart-evolucao"></canvas></div>
             </div>
 
-            <!-- HISTÓRICO COM BUSCA E PAGINAÇÃO -->
+            <!-- HISTÓRICO DE DADOS COM PAGINAÇÃO -->
             <div class="bg-white rounded-xl border border-slate-200/80 overflow-hidden">
                 <div class="p-4 bg-slate-50 border-b border-slate-100 space-y-3">
                     <div class="flex justify-between items-center">
@@ -261,7 +271,7 @@
                     </div>
                 </div>
 
-                <!-- TABELA EXPANDIDA -->
+                <!-- TABELA DE RESULTADOS -->
                 <div class="table-container">
                     <table class="w-full text-left text-xs">
                         <thead>
@@ -290,14 +300,17 @@
         </main>
     </div>
 
+    <!-- ===== MOTOR DE INTELIGÊNCIA JAVASCRIPT ===== -->
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyf3Y5lvdPzUDwcvB6FNP5hkL3C6r0SNh9jXqw-DZiQYPgwFU3iH2deNn2xws42sQlL/exec";
+        // ATENÇÃO: Substitua pelo URL do seu Google Apps Script (Execução Web App)
+        const SCRIPT_URL = "COLOQUE_SEU_LINK_AQUI"; 
 
         let dadosTratados = [];
         let linhaEmEdicao = null; 
         let paginaAtual = 1;         
         const itensPorPagina = 10;   
-        let chartConsultoresInstance, chartStatusInstance, chartCanaisInstance, chartEvolucaoInstance, chartMotivosInstance;
+        
+        let chartConsultoresInstance, chartStatusInstance, chartCanaisInstance, chartEvolucaoInstance, chartMotivosInstance, chartFunilInstance;
         const BASE_ACESSOS = { "Claudia": "2021", "Fabio": "3031", "Maicon": "4041", "Adm": "9999" };
         let usuarioLogado = "";
 
@@ -305,12 +318,15 @@
             Chart.register(ChartDataLabels);
         }
 
+        // ================= TRATAMENTO DE DATAS (LIÇÃO APRENDIDA BI) =================
         function configurarDatasPadrao() {
             const hoje = new Date();
+            // Data Fim recebe +1 dia para cobrir as frações de horas no filtro do Google Sheets
             document.getElementById("filter-date-start").value = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().split('T')[0];
             document.getElementById("filter-date-end").value = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() + 1).toISOString().split('T')[0];
         }
 
+        // ================= SISTEMA DE LOGIN E PRIVACIDADE =================
         function deslogarUsuario() {
             usuarioLogado = "";
             document.getElementById("tela-login").classList.remove("hidden");
@@ -352,7 +368,6 @@
             }
         }
 
-        // ===== PRIVACIDADE DE MOTIVOS =====
         function verificarStatusMotivo() {
             const status = document.getElementById('novo-status').value;
             const containerMotivo = document.getElementById('container-motivo');
@@ -368,6 +383,7 @@
             }
         }
 
+        // ================= CRUD (OPERAÇÕES DE FORMULÁRIO) =================
         function abrirModalNovo() {
             linhaEmEdicao = null;
             document.getElementById('modal-novo').classList.remove('hidden');
@@ -428,6 +444,7 @@
                 motivo: document.getElementById('novo-motivo').value
             };
 
+            // Comunicação Assíncrona para contornar CORS via POST JSON
             fetch(SCRIPT_URL, {
                 method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
             }).then(() => {
@@ -435,14 +452,22 @@
                 btnSalvar.disabled = false;
                 setTimeout(() => { carregarDadosDoServidor(); }, 1500); 
             }).catch(err => {
-                alert("Erro de Conexão!");
+                alert("Erro de Conexão. O registro não foi salvo.");
                 btnSalvar.disabled = false;
             });
         }
 
+        // ================= INICIALIZAÇÃO E COMUNICAÇÃO DE DADOS =================
         document.addEventListener("DOMContentLoaded", () => {
             configurarDatasPadrao();
-            carregarDadosDoServidor();
+            
+            // Prioridade para Google Script Run (Se aberto via Google Sheets nativo)
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+                google.script.run.withSuccessHandler(inicializarDashboard).puxarDadosPlanilha();
+            } else {
+                // Fallback para teste/ambiente externo via JSONP (Evita erro de CORS do navegador)
+                carregarDadosDoServidor();
+            }
 
             ["filter-date-start", "filter-date-end", "filter-consultant", "table-filter-consultant", "table-filter-status"].forEach(id => {
                 document.getElementById(id).addEventListener("change", () => {
@@ -458,7 +483,9 @@
             document.getElementById("btn-reset-filters").onclick = () => { configurarDatasPadrao(); processarEAtualizarDashboardCompleto(true); };
         });
 
+        // Função de Fallback JSONP
         function carregarDadosDoServidor() {
+            if(!SCRIPT_URL.startsWith("http")) return;
             window.handleGoogleData = function(data) {
                 document.getElementById("banner-erro").classList.add("hidden");
                 inicializarDashboard(data);
@@ -471,10 +498,12 @@
             document.body.appendChild(script);
         }
 
+        // ================= MAPEAMENTO INTELIGENTE DE COLUNAS (LIÇÃO APRENDIDA BI) =================
         function inicializarDashboard(rows) {
             if (!rows || rows.length < 2) return;
             const cab = rows[0].map(c => String(c).trim().toLowerCase());
             
+            // Localiza índices dinamicamente, não importa se mudarem de ordem na planilha
             const iDat = cab.findIndex(h => h.includes("data"));
             const iNom = cab.findIndex(h => h.includes("nome"));
             const iTel = cab.findIndex(h => h.includes("telefone") || h.includes("tel"));
@@ -490,6 +519,7 @@
                 if (!col[0] || col[0] === "") continue;
 
                 let dataForm = String(iDat !== -1 ? col[iDat] : col[0]).trim();
+                // Normaliza Data
                 if (dataForm.includes("/")) {
                     const p = dataForm.split("/");
                     if (p.length === 3) dataForm = `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
@@ -520,6 +550,7 @@
             if (usuarioLogado !== "") processarEAtualizarDashboardCompleto(true);
         }
 
+        // ================= FILTRAGEM =================
         function processarEAtualizarDashboardCompleto(resetarPagina = true) {
             if (usuarioLogado === "") return;
             if (resetarPagina) paginaAtual = 1;
@@ -534,8 +565,10 @@
             if (usuarioLogado === "Claudia" || usuarioLogado === "Maicon") tableCons = usuarioLogado;
             const tableStat = document.getElementById("table-filter-status").value;
 
+            // Filtra matriz para os Gráficos
             const filtradosGraficos = dadosTratados.filter(d => (start ? d.data >= start : true) && (end ? d.data <= end : true) && (filterCons === "todos" ? true : d.consultor === filterCons));
 
+            // Atualiza KPIs Numericos Superiores
             document.getElementById("kpi-total-atendimentos").innerText = filtradosGraficos.length;
             document.getElementById("kpi-mes-atual").innerText = filtradosGraficos.length;
             document.getElementById("kpi-orcamentos-enviados").innerText = filtradosGraficos.filter(d => d.orcamento.toLowerCase() === "sim").length;
@@ -543,6 +576,7 @@
 
             renderizarGraficos(filtradosGraficos);
 
+            // Filtra matriz separada para a Tabela (incluindo barras de busca)
             let filtradosTabela = dadosTratados.filter(d => {
                 if (searchTxt !== "") {
                     const bateNome = d.nome.toLowerCase().includes(searchTxt);
@@ -560,6 +594,7 @@
             renderizarTabela(filtradosTabela);
         }
 
+        // ================= TABELA E PAGINAÇÃO =================
         function renderizarTabela(dados) {
             const tbody = document.getElementById("table-body");
             tbody.innerHTML = "";
@@ -621,18 +656,25 @@
             };
         }
 
-        // ===== 🎨 MATRIZ DE RENDERIZAÇÃO DOS GRÁFICOS =====
+        // ================= MOTOR DE CHART.JS (O CORAÇÃO DO BI VISUAL) =================
         function renderizarGraficos(dados) {
             const cCons = {}, cStat = {}, cCanTotal = {}, cCanVendas = {}, cCanOrcamentos = {}, cData = {}, cMot = {};
             
+            // Variáveis de escopo do Funil Global
+            let fAtendimentos = 0, fQualificados = 0, fOrcamentos = 0, fNegociacoes = 0, fVendas = 0;
+
             const motivosPadrao = ["Não resp.", "Preço", "Prazo", "Curioso", "Produto Indisp."];
             motivosPadrao.forEach(m => cMot[m] = 0);
 
+            // Loop único de processamento matemático (Alta Performance)
             dados.forEach(d => { 
+                
+                // Contadores Básicos para Grade 2x2
                 cCons[d.consultor] = (cCons[d.consultor] || 0) + 1; 
                 cStat[d.status] = (cStat[d.status] || 0) + 1; 
                 cData[d.data] = (cData[d.data] || 0) + 1;
                 
+                // Contadores Específicos para o Gráfico de Canais (Atendimentos + Orçamentos)
                 cCanTotal[d.canal] = (cCanTotal[d.canal] || 0) + 1;
                 cCanVendas[d.canal] = cCanVendas[d.canal] || 0;
                 cCanOrcamentos[d.canal] = cCanOrcamentos[d.canal] || 0;
@@ -641,90 +683,103 @@
                     cCanVendas[d.canal]++;
                 }
                 
-                if (d.orcamento === "Sim") {
+                if (d.orcamento === "Sim" || d.orcamento === "sim") {
                     cCanOrcamentos[d.canal]++;
                 }
 
+                // Normalização de Strings para Motivos de Encerramento
+                let mTratado = d.motivo || "";
+                if (mTratado.includes("responder")) mTratado = "Não resp.";
+                if (mTratado.includes("Preço") || mTratado.includes("orçamento")) mTratado = "Preço";
+                if (mTratado.includes("Prazo") || mTratado.includes("longo")) mTratado = "Prazo";
+                if (mTratado.includes("pesquisando") || mTratado.includes("interesse")) mTratado = "Curioso";
+                if (mTratado.includes("indisponível")) mTratado = "Produto Indisp.";
+
                 if (d.status === "Encerrado" && d.motivo && d.motivo !== "") {
-                    let mTratado = d.motivo;
-                    if (mTratado.includes("responder")) mTratado = "Não resp.";
-                    if (mTratado.includes("Preço") || mTratado.includes("orçamento")) mTratado = "Preço";
-                    if (mTratado.includes("Prazo") || mTratado.includes("longo")) mTratado = "Prazo";
-                    if (mTratado.includes("pesquisando") || mTratado.includes("interesse")) mTratado = "Curioso";
-                    if (mTratado.includes("indisponível")) mTratado = "Produto Indisp.";
-                    
-                    if (cMot[mTratado] !== undefined) {
-                        cMot[mTratado]++;
-                    } else {
-                        cMot[mTratado] = 1;
-                    }
+                    cMot[mTratado] = (cMot[mTratado] || 0) + 1;
                 }
+
+                // Lógica de Inteligência do Funil Global
+                fAtendimentos++; 
+                if (!(d.status === "Encerrado" && (mTratado === "Curioso" || mTratado === "Não resp."))) fQualificados++;
+                if (d.orcamento === "Sim" || d.orcamento === "sim") fOrcamentos++;
+                if (d.status === "Orçamento Enviado" || d.status === "Venda Efetuada" || (d.status === "Encerrado" && (mTratado === "Preço" || mTratado === "Prazo" || mTratado === "Produto Indisp."))) fNegociacoes++;
+                if (d.status === "Venda Efetuada") fVendas++;
             });
 
+            // Configuração Limpa de Eixos para reaproveitamento
             const optVerticaisClean = { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                layout: { padding: { top: 25, left: 10, right: 10 } }, 
-                barPercentage: 0.85,          
-                categoryPercentage: 0.85,     
+                responsive: true, maintainAspectRatio: false, layout: { padding: { top: 25, left: 10, right: 10 } }, 
+                barPercentage: 0.85, categoryPercentage: 0.85,     
                 scales: { 
                     y: { beginAtZero: true, grid: { display: false }, ticks: { display: false }, border: { display: false } }, 
                     x: { grid: { display: false }, ticks: { font: { size: 10, weight: '600' } }, border: { display: false } } 
                 },
-                plugins: {
-                    legend: { display: false },
-                    datalabels: { display: true, anchor: 'end', align: 'top', color: '#475569', font: { weight: 'bold', size: 11 } }
-                }
+                plugins: { legend: { display: false }, datalabels: { display: true, anchor: 'end', align: 'top', color: '#475569', font: { weight: 'bold', size: 11 } } }
             };
 
+            // ========== RENDERIZAÇÃO: DESTAQUE TOPO ==========
+            // Chart 0: Funil Global de Vendas (Ocupa Largura Total)
+            if (chartFunilInstance) chartFunilInstance.destroy();
+            chartFunilInstance = new Chart(document.getElementById('chart-funil').getContext('2d'), { 
+                type: 'bar', 
+                data: { 
+                    labels: ['1. Atendimentos', '2. Qualificados', '3. Orçamentos', '4. Negociações', '5. Vendas'], 
+                    datasets: [{
+                        data: [fAtendimentos, fQualificados, fOrcamentos, fNegociacoes, fVendas],
+                        backgroundColor: ['#94a3b8', '#38bdf8', '#fbbf24', '#a78bfa', '#10b981'], 
+                        borderRadius: 6, barPercentage: 0.6
+                    }] 
+                }, 
+                options: {
+                    responsive: true, maintainAspectRatio: false, layout: { padding: { top: 30, left: 10, right: 10, bottom: 5 } }, 
+                    scales: { 
+                        y: { display: false, beginAtZero: true, suggestedMax: fAtendimentos * 1.15 },
+                        x: { grid: { display: false }, ticks: { font: { size: 11, weight: 'bold' } }, border: { display: false } } 
+                    },
+                    plugins: { 
+                        legend: { display: false },
+                        datalabels: { 
+                            align: 'top', anchor: 'end', color: '#1e293b', font: { weight: 'bold', size: 12 },
+                            formatter: (val) => {
+                                let pct = fAtendimentos > 0 ? Math.round((val / fAtendimentos) * 100) : 0;
+                                return val + ' (' + pct + '%)';
+                            }
+                        }
+                    }
+                }, plugins: [ChartDataLabels] 
+            });
+
+
+            // ========== RENDERIZAÇÃO: GRADE 2x2 ==========
             // Chart 1: Consultores
             if (chartConsultoresInstance) chartConsultoresInstance.destroy();
             chartConsultoresInstance = new Chart(document.getElementById('chart-consultores').getContext('2d'), { 
-                type: 'bar', 
-                data: { labels: Object.keys(cCons), datasets: [{ data: Object.values(cCons), backgroundColor: '#3b82f6', borderRadius: 6 }] }, 
-                options: optVerticaisClean,
-                plugins: [ChartDataLabels] 
+                type: 'bar', data: { labels: Object.keys(cCons), datasets: [{ data: Object.values(cCons), backgroundColor: '#3b82f6', borderRadius: 6 }] }, 
+                options: optVerticaisClean, plugins: [ChartDataLabels] 
             });
             
             // Chart 2: Status
             if (chartStatusInstance) chartStatusInstance.destroy();
             chartStatusInstance = new Chart(document.getElementById('chart-status').getContext('2d'), { 
-                type: 'doughnut', 
-                data: { labels: Object.keys(cStat), datasets: [{ data: Object.values(cStat), backgroundColor: ['#10b981', '#3b82f6', '#ef4444', '#f59e0b', '#64748b'], borderWidth: 2 }] }, 
+                type: 'doughnut', data: { labels: Object.keys(cStat), datasets: [{ data: Object.values(cStat), backgroundColor: ['#10b981', '#3b82f6', '#ef4444', '#f59e0b', '#64748b'], borderWidth: 2 }] }, 
                 options: { 
-                    cutout: '50%', 
-                    responsive: true, 
-                    maintainAspectRatio: false, 
-                    layout: { padding: 10 },
+                    cutout: '50%', responsive: true, maintainAspectRatio: false, layout: { padding: 10 },
                     plugins: { 
-                        legend: { 
-                            display: true, 
-                            position: 'bottom',
-                            labels: { boxWidth: 12, padding: 15, font: { size: 10, weight: '500' } }
-                        },
-                        datalabels: {
-                            color: '#000000',
-                            font: { weight: 'bold', size: 12 },
-                            textAlign: 'center',
-                            formatter: (value, ctx) => {
-                                let total = 0;
-                                let dataset = ctx.chart.data.datasets[0].data;
-                                dataset.forEach(val => total += val);
+                        legend: { display: true, position: 'bottom', labels: { boxWidth: 12, padding: 15, font: { size: 10, weight: '500' } } },
+                        datalabels: { color: '#000000', font: { weight: 'bold', size: 12 }, textAlign: 'center', formatter: (value, ctx) => {
+                                let total = 0; let dataset = ctx.chart.data.datasets[0].data; dataset.forEach(val => total += val);
                                 return total > 0 ? ((value / total) * 100).toFixed(0) + '%' : '0%';
-                            }
-                        }
+                        } }
                     } 
-                },
-                plugins: [ChartDataLabels] 
+                }, plugins: [ChartDataLabels] 
             });
             
-            // 🚨 CHART 3: CANAIS (Misto de Barras Agrupadas + Linha de Conversão)
+            // Chart 3: Canais (Gráfico Combo com Barras Agrupadas e Linha Flutuante)
             const labelsCanal = Object.keys(cCanTotal);
             const dataVolumeCanal = Object.values(cCanTotal);
             const dataOrcamentosCanal = labelsCanal.map(canal => cCanOrcamentos[canal] || 0);
-            const dataPercentualCanal = labelsCanal.map(canal => {
-                return cCanTotal[canal] > 0 ? Math.round((cCanVendas[canal] / cCanTotal[canal]) * 100) : 0;
-            });
+            const dataPercentualCanal = labelsCanal.map(canal => cCanTotal[canal] > 0 ? Math.round((cCanVendas[canal] / cCanTotal[canal]) * 100) : 0);
 
             if (chartCanaisInstance) chartCanaisInstance.destroy();
             chartCanaisInstance = new Chart(document.getElementById('chart-canais').getContext('2d'), { 
@@ -732,101 +787,44 @@
                 data: { 
                     labels: labelsCanal, 
                     datasets: [
-                        {
-                            type: 'line',
-                            label: 'Conversão',
-                            data: dataPercentualCanal,
-                            borderColor: '#60a5fa', 
-                            backgroundColor: '#fff',
-                            borderWidth: 1.5,       
-                            pointRadius: 4,
-                            pointBackgroundColor: '#fff',
-                            pointBorderWidth: 1.5,
-                            tension: 0.3,
-                            yAxisID: 'y1',
-                            datalabels: {
-                                align: 'top',       
-                                offset: 6,          
-                                color: '#000000',   
-                                font: { weight: 'bold', size: 10 },
-                                formatter: (val) => val + '%'
-                            }
-                        },
-                        {
-                            type: 'bar',
-                            label: 'Atendimentos',
-                            data: dataVolumeCanal,
-                            backgroundColor: '#0f766e', 
-                            borderRadius: 6,
-                            yAxisID: 'y',
-                            datalabels: { align: 'top', anchor: 'end', color: '#475569', font: { weight: 'bold', size: 11 } }
-                        },
-                        {
-                            type: 'bar',
-                            label: 'Orçamentos',
-                            data: dataOrcamentosCanal,
-                            backgroundColor: '#f59e0b', 
-                            borderRadius: 6,
-                            yAxisID: 'y',
-                            datalabels: { align: 'top', anchor: 'end', color: '#475569', font: { weight: 'bold', size: 11 } }
-                        }
+                        { type: 'line', label: 'Conversão', data: dataPercentualCanal, borderColor: '#60a5fa', backgroundColor: '#fff', borderWidth: 1.5, pointRadius: 4, pointBackgroundColor: '#fff', pointBorderWidth: 1.5, tension: 0.3, yAxisID: 'y1', datalabels: { align: 'top', offset: 6, color: '#000000', font: { weight: 'bold', size: 10 }, formatter: (val) => val + '%' } },
+                        { type: 'bar', label: 'Atendimentos', data: dataVolumeCanal, backgroundColor: '#0f766e', borderRadius: 6, yAxisID: 'y', datalabels: { align: 'top', anchor: 'end', color: '#475569', font: { weight: 'bold', size: 11 } } },
+                        { type: 'bar', label: 'Orçamentos', data: dataOrcamentosCanal, backgroundColor: '#f59e0b', borderRadius: 6, yAxisID: 'y', datalabels: { align: 'top', anchor: 'end', color: '#475569', font: { weight: 'bold', size: 11 } } }
                     ] 
                 }, 
                 options: {
-                    responsive: true, 
-                    maintainAspectRatio: false, 
-                    layout: { padding: { top: 30, left: 15, right: 15, bottom: 5 } }, 
-                    barPercentage: 0.8,          
-                    categoryPercentage: 0.6,     
+                    responsive: true, maintainAspectRatio: false, layout: { padding: { top: 30, left: 15, right: 15, bottom: 5 } }, 
+                    barPercentage: 0.8, categoryPercentage: 0.6,     
                     scales: { 
                         y: { type: 'linear', display: false, position: 'left', beginAtZero: true, suggestedMax: Math.max(...dataVolumeCanal) * 1.2 },
                         y1: { type: 'linear', display: false, position: 'right', beginAtZero: true, suggestedMax: 110 },
                         x: { grid: { display: false }, ticks: { font: { size: 10, weight: '600' } }, border: { display: false } } 
                     },
-                    plugins: { 
-                        legend: { 
-                            display: true, 
-                            position: 'bottom',
-                            labels: { boxWidth: 10, padding: 15, font: { size: 10, weight: '500' } }
-                        } 
-                    }
-                },
-                plugins: [ChartDataLabels] 
+                    plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 10, padding: 15, font: { size: 10, weight: '500' } } } }
+                }, plugins: [ChartDataLabels] 
             });
             
             // Chart 4: Motivos de Encerramento
             if (chartMotivosInstance) chartMotivosInstance.destroy();
             chartMotivosInstance = new Chart(document.getElementById('chart-motivos').getContext('2d'), { 
-                type: 'bar', 
-                data: { labels: Object.keys(cMot), datasets: [{ data: Object.values(cMot), backgroundColor: '#ef4444', borderRadius: 6 }] }, 
+                type: 'bar', data: { labels: Object.keys(cMot), datasets: [{ data: Object.values(cMot), backgroundColor: '#ef4444', borderRadius: 6 }] }, 
                 options: {
-                    responsive: true, maintainAspectRatio: false, indexAxis: 'y',
-                    layout: { padding: { right: 35, top: 10, bottom: 10 } },
+                    responsive: true, maintainAspectRatio: false, indexAxis: 'y', layout: { padding: { right: 35, top: 10, bottom: 10 } },
                     barPercentage: 0.85, categoryPercentage: 0.85,
-                    scales: {
-                        y: { grid: { display: false }, ticks: { font: { size: 10, weight: '600' } }, border: { display: false } },
-                        x: { beginAtZero: true, grid: { display: false }, ticks: { display: false }, border: { display: false } }
-                    },
-                    plugins: {
-                        legend: { display: false },
-                        datalabels: { display: true, anchor: 'end', align: 'right', color: '#475569', font: { weight: 'bold', size: 11 } }
-                    }
-                },
-                plugins: [ChartDataLabels] 
+                    scales: { y: { grid: { display: false }, ticks: { font: { size: 10, weight: '600' } }, border: { display: false } }, x: { beginAtZero: true, grid: { display: false }, ticks: { display: false }, border: { display: false } } },
+                    plugins: { legend: { display: false }, datalabels: { display: true, anchor: 'end', align: 'right', color: '#475569', font: { weight: 'bold', size: 11 } } }
+                }, plugins: [ChartDataLabels] 
             });
 
+            // ========== RENDERIZAÇÃO: EVOLUÇÃO ==========
             // Chart 5: Evolução Diária
             const dOrd = Object.keys(cData).sort();
             if (chartEvolucaoInstance) chartEvolucaoInstance.destroy();
             chartEvolucaoInstance = new Chart(document.getElementById('chart-evolucao').getContext('2d'), { 
-                type: 'line', 
-                data: { labels: dOrd.map(d => d.split("-").slice(1,3).reverse().join("/")), datasets: [{ data: dOrd.map(d => cData[d]), borderColor: '#10b981', fill: false, tension: 0.2, borderWidth: 3 }] }, 
+                type: 'line', data: { labels: dOrd.map(d => d.split("-").slice(1,3).reverse().join("/")), datasets: [{ data: dOrd.map(d => cData[d]), borderColor: '#10b981', fill: false, tension: 0.2, borderWidth: 3 }] }, 
                 options: {
                     responsive: true, maintainAspectRatio: false, layout: { padding: { top: 15, right: 10, left: 10 } },
-                    scales: {
-                        y: { beginAtZero: true, grid: { display: false }, ticks: { font: { size: 10 } }, border: { display: false } },
-                        x: { grid: { display: false }, ticks: { font: { size: 10 } }, border: { display: false } }
-                    },
+                    scales: { y: { beginAtZero: true, grid: { display: false }, ticks: { font: { size: 10 } }, border: { display: false } }, x: { grid: { display: false }, ticks: { font: { size: 10 } }, border: { display: false } } },
                     plugins: { legend: false, datalabels: { display: false } } 
                 }
             });

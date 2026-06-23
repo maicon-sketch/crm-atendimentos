@@ -185,6 +185,7 @@
         </header>
 
         <main class="max-w-7xl mx-auto px-4 py-4 space-y-4">
+            
             <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200/80">
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
                     <div>
@@ -538,11 +539,6 @@
 
             const filtradosGraficos = dadosTratados.filter(d => (start ? d.data >= start : true) && (end ? d.data <= end : true) && (filterCons === "todos" ? true : d.consultor === filterCons));
 
-            document.getElementById("kpi-total-atendimentos").innerText = filtradosGraficos.length;
-            document.getElementById("kpi-mes-atual").innerText = filtradosGraficos.length;
-            document.getElementById("kpi-orcamentos-enviados").innerText = filtradosGraficos.filter(d => d.orcamento.toLowerCase() === "sim").length;
-            document.getElementById("kpi-taxa-conclusao").innerText = `${filtradosGraficos.length > 0 ? Math.round((filtradosGraficos.filter(d => d.status === "Venda Efetuada").length / filtradosGraficos.length) * 100) : 0}%`;
-
             renderizarGraficos(filtradosGraficos);
 
             let filtradosTabela = dadosTratados.filter(d => {
@@ -654,7 +650,7 @@
                     cMot[mTratado] = (cMot[mTratado] || 0) + 1;
                 }
 
-                // 🚨 LÓGICA TRUE WATERFALL COM "PRODUTO INDISPONÍVEL" EM DESCARTE
+                // LÓGICA TRUE WATERFALL COM "PRODUTO INDISPONÍVEL" EM DESCARTE
                 fAtendimentos++; 
 
                 var passouPeloOrcamento = (d.orcamento === "Sim" || d.orcamento === "sim" || d.status === "Orçamento Enviado" || d.status === "Venda Efetuada");
@@ -673,6 +669,15 @@
                     fQualificados++;
                 }
             });
+
+            // 🚨 ALINHAMENTO ABSOLUTO DE KPIs (Garante paridade total Funil vs Cards)
+            document.getElementById("kpi-total-atendimentos").innerText = fAtendimentos;
+            document.getElementById("kpi-mes-atual").innerText = fAtendimentos;
+            document.getElementById("kpi-orcamentos-enviados").innerText = fOrcamentos;
+            
+            // Nova Regra de Conversão: Vendas / Orçamentos
+            var taxaConversaoReal = fOrcamentos > 0 ? Math.round((fVendas / fOrcamentos) * 100) : 0;
+            document.getElementById("kpi-taxa-conclusao").innerText = taxaConversaoReal + "%";
 
             const optVerticaisClean = { 
                 responsive: true, maintainAspectRatio: false, layout: { padding: { top: 25, left: 10, right: 10 } }, 
@@ -702,7 +707,7 @@
                     maintainAspectRatio: false, 
                     barPercentage: 1.0, 
                     categoryPercentage: 1.0,
-                    layout: { padding: { top: 10, left: 10, right: 70, bottom: 10 } }, 
+                    layout: { padding: { top: 10, left: 10, right: 85, bottom: 10 } }, 
                     scales: { 
                         x: { display: false, beginAtZero: true, suggestedMax: fAtendimentos * 1.15 },
                         y: { 
@@ -715,9 +720,15 @@
                         legend: { display: false },
                         datalabels: { 
                             align: 'right', anchor: 'end', color: '#1e293b', font: { weight: 'bold', size: 12 },
-                            formatter: (val) => {
-                                var pct = fAtendimentos > 0 ? Math.round((val / fAtendimentos) * 100) : 0;
-                                return val + ' (' + pct + '%)';
+                            formatter: (val, ctx) => {
+                                // 🚨 Tratamento da legenda de conversão no motor do gráfico
+                                if (ctx.dataIndex === 3) {
+                                    var pct = fOrcamentos > 0 ? Math.round((val / fOrcamentos) * 100) : 0;
+                                    return val + ' (' + pct + '% Conv.)';
+                                } else {
+                                    var pct = fAtendimentos > 0 ? Math.round((val / fAtendimentos) * 100) : 0;
+                                    return val + ' (' + pct + '%)';
+                                }
                             }
                         }
                     }
@@ -731,10 +742,23 @@
                 options: optVerticaisClean, plugins: [ChartDataLabels] 
             });
             
-            // ========== 3. GRÁFICO POR STATUS ==========
+            // ========== 3. GRÁFICO POR STATUS (Cores Fixas Alinhadas) ==========
+            var labelsStatus = Object.keys(cStat);
+            var colorMap = {
+                "Venda Efetuada": "#10b981",    // Verde
+                "Orçamento Enviado": "#fbbf24", // Amarelo
+                "Em atendimento": "#3b82f6",    // Azul
+                "Encerrado": "#ef4444"          // Vermelho
+            };
+            var colorsStatus = labelsStatus.map(function(label) { return colorMap[label] || "#64748b"; });
+
             if (chartStatusInstance) chartStatusInstance.destroy();
             chartStatusInstance = new Chart(document.getElementById('chart-status').getContext('2d'), { 
-                type: 'doughnut', data: { labels: Object.keys(cStat), datasets: [{ data: Object.values(cStat), backgroundColor: ['#10b981', '#3b82f6', '#ef4444', '#f59e0b', '#64748b'], borderWidth: 2 }] }, 
+                type: 'doughnut', 
+                data: { 
+                    labels: labelsStatus, 
+                    datasets: [{ data: Object.values(cStat), backgroundColor: colorsStatus, borderWidth: 2 }] 
+                }, 
                 options: { 
                     cutout: '50%', responsive: true, maintainAspectRatio: false, layout: { padding: 10 },
                     plugins: { 

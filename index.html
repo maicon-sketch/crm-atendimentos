@@ -32,6 +32,7 @@
 </head>
 <body class="text-slate-800 antialiased relative md:select-text">
 
+    <!-- LOGIN -->
     <div id="tela-login" class="fixed inset-0 bg-slate-900/90 backdrop-blur-md flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-sm p-6 space-y-4">
             <div class="text-center space-y-1">
@@ -69,6 +70,7 @@
         </div>
     </div>
 
+    <!-- MODAL (NOVO / EDITAR) -->
     <div id="modal-novo" class="fixed inset-0 bg-slate-900/90 backdrop-blur-sm flex items-center justify-center z-50 p-4 hidden">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md flex flex-col max-h-[90vh] overflow-hidden">
             <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
@@ -156,10 +158,12 @@
         </div>
     </div>
 
+    <!-- BANNER DE ERRO -->
     <div id="banner-erro" class="bg-rose-600 text-white px-4 py-3 text-center text-xs font-bold hidden sticky top-0 z-50 shadow-md">
         <i class="fa-solid fa-triangle-exclamation mr-1"></i> Falha ao conectar. Atualizando...
     </div>
 
+    <!-- CONTEÚDO PRINCIPAL -->
     <div>
         <header class="bg-slate-900 text-white shadow-md sticky top-0 z-40">
             <div class="max-w-7xl mx-auto px-4 py-3.5 flex flex-col sm:flex-row justify-between items-center gap-3">
@@ -185,6 +189,7 @@
         </header>
 
         <main class="max-w-7xl mx-auto px-4 py-4 space-y-4">
+            <!-- FILTROS GLOBAIS -->
             <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200/80">
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
                     <div>
@@ -205,6 +210,7 @@
                 <button type="button" id="btn-reset-filters" class="w-full text-xs font-bold bg-slate-100 py-2.5 rounded-xl text-slate-600"><i class="fa-solid fa-arrow-rotate-left mr-1"></i> Limpar Filtros</button>
             </div>
 
+            <!-- KPIs -->
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 <div class="bg-white p-4 rounded-xl border border-slate-200/80"><span class="text-[11px] font-bold text-slate-400 uppercase block">Atendimentos</span><h3 id="kpi-total-atendimentos" class="text-2xl font-bold text-slate-800">0</h3></div>
                 <div class="bg-white p-4 rounded-xl border border-slate-200/80"><span class="text-[11px] font-bold text-slate-400 uppercase block">No Mês</span><h3 id="kpi-mes-atual" class="text-2xl font-bold text-slate-800">0</h3></div>
@@ -212,6 +218,7 @@
                 <div class="bg-white p-4 rounded-xl border border-slate-200/80"><span class="text-[11px] font-bold text-slate-400 uppercase block">Conversão</span><h3 id="kpi-taxa-conclusao" class="text-2xl font-bold text-slate-800">0%</h3></div>
             </div>
 
+            <!-- GRADE DE GRÁFICOS (2x2) -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div class="bg-white p-4 rounded-xl border border-slate-200/80"><h3 class="font-bold text-slate-700 text-xs mb-2">Por Consultor</h3><div class="chart-container"><canvas id="chart-consultores"></canvas></div></div>
                 <div class="bg-white p-4 rounded-xl border border-slate-200/80"><h3 class="font-bold text-slate-700 text-xs mb-2">Por Status</h3><div class="chart-container"><canvas id="chart-status"></canvas></div></div>
@@ -219,11 +226,13 @@
                 <div class="bg-white p-4 rounded-xl border border-slate-200/80"><h3 class="font-bold text-slate-700 text-xs mb-2">Motivos de Encerramento</h3><div class="chart-container"><canvas id="chart-motivos"></canvas></div></div>
             </div>
 
+            <!-- GRÁFICO EVOLUÇÃO DIÁRIA -->
             <div class="bg-white p-4 rounded-xl border border-slate-200/80 w-full">
                 <h3 class="font-bold text-slate-700 text-xs mb-2">Evolução Diária</h3>
                 <div class="chart-container" style="height: 180px;"><canvas id="chart-evolucao"></canvas></div>
             </div>
 
+            <!-- HISTÓRICO COM BUSCA E PAGINAÇÃO -->
             <div class="bg-white rounded-xl border border-slate-200/80 overflow-hidden">
                 <div class="p-4 bg-slate-50 border-b border-slate-100 space-y-3">
                     <div class="flex justify-between items-center">
@@ -252,6 +261,7 @@
                     </div>
                 </div>
 
+                <!-- TABELA EXPANDIDA -->
                 <div class="table-container">
                     <table class="w-full text-left text-xs">
                         <thead>
@@ -270,6 +280,7 @@
                     </table>
                 </div>
 
+                <!-- CONTROLES DE PAGINAÇÃO -->
                 <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-between items-center text-xs">
                     <button type="button" id="btn-pag-anterior" class="bg-white border border-slate-200 px-4 py-2 rounded-xl font-bold text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 transition-transform cursor-pointer">◄ Anterior</button>
                     <span id="txt-paginacao" class="text-slate-500 font-semibold tracking-wide">Página - de -</span>
@@ -341,6 +352,7 @@
             }
         }
 
+        // ===== PRIVACIDADE DE MOTIVOS =====
         function verificarStatusMotivo() {
             const status = document.getElementById('novo-status').value;
             const containerMotivo = document.getElementById('container-motivo');
@@ -609,6 +621,7 @@
             };
         }
 
+        // ===== 🎨 MATRIZ DE RENDERIZAÇÃO DOS GRÁFICOS =====
         function renderizarGraficos(dados) {
             const cCons = {}, cStat = {}, cCanTotal = {}, cCanVendas = {}, cCanOrcamentos = {}, cData = {}, cMot = {};
             
@@ -705,7 +718,7 @@
                 plugins: [ChartDataLabels] 
             });
             
-            // 🚨 CHART 3: CANAIS (Barras Corrigidas e Perfeitamente Agrupadas Lado a Lado)
+            // 🚨 CHART 3: CANAIS (Misto de Barras Agrupadas + Linha de Conversão)
             const labelsCanal = Object.keys(cCanTotal);
             const dataVolumeCanal = Object.values(cCanTotal);
             const dataOrcamentosCanal = labelsCanal.map(canal => cCanOrcamentos[canal] || 0);
@@ -763,7 +776,6 @@
                     responsive: true, 
                     maintainAspectRatio: false, 
                     layout: { padding: { top: 30, left: 15, right: 15, bottom: 5 } }, 
-                    // As duas propriedades abaixo unem e agrupam as barras coladas por categoria
                     barPercentage: 0.8,          
                     categoryPercentage: 0.6,     
                     scales: { 

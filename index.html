@@ -628,7 +628,6 @@
                     cCanVendas[d.canal]++;
                 }
                 
-                // CONTA OS ORÇAMENTOS ENVIADOS
                 if (d.orcamento === "Sim") {
                     cCanOrcamentos[d.canal]++;
                 }
@@ -706,10 +705,10 @@
                 plugins: [ChartDataLabels] 
             });
             
-            // 🚨 CHART 3: CANAIS (Combo Chart de Funil com Legenda)
+            // CHART 3: CANAIS (Duas barras agrupadas + linha azul-claro de conversão no topo)
             const labelsCanal = Object.keys(cCanTotal);
             const dataVolumeCanal = Object.values(cCanTotal);
-            const dataOrcamentosCanal = labelsCanal.map(canal => cCanOrcamentos[canal]);
+            const dataOrcamentosCanal = labelsCanal.map(canal => dataOrcamentosCanal = cCanOrcamentos[canal] || 0);
             const dataPercentualCanal = labelsCanal.map(canal => {
                 return cCanTotal[canal] > 0 ? Math.round((cCanVendas[canal] / cCanTotal[canal]) * 100) : 0;
             });
@@ -746,17 +745,17 @@
                             data: dataVolumeCanal,
                             backgroundColor: '#0f766e', 
                             borderRadius: 6,
-                            maxBarThickness: 40,
+                            maxBarThickness: 35,
                             yAxisID: 'y',
                             datalabels: { align: 'top', anchor: 'end', color: '#475569', font: { weight: 'bold', size: 11 } }
                         },
                         {
                             type: 'bar',
                             label: 'Orçamentos',
-                            data: dataOrcamentosCanal,
-                            backgroundColor: '#f59e0b', // Cor Laranja/Âmbar
+                            data: labelsCanal.map(canal => cCanOrcamentos[canal]),
+                            backgroundColor: '#f59e0b', 
                             borderRadius: 6,
-                            maxBarThickness: 40,
+                            maxBarThickness: 35,
                             yAxisID: 'y',
                             datalabels: { align: 'top', anchor: 'end', color: '#475569', font: { weight: 'bold', size: 11 } }
                         }

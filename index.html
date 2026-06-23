@@ -217,7 +217,7 @@
                 <div class="flex justify-between items-center border-b border-slate-100 pb-3">
                     <h3 class="font-bold text-slate-700 flex items-center gap-2 text-sm sm:text-base"><i class="fa-solid fa-filter-circle-dollar text-orange-500"></i> Funil Global de Vendas</h3>
                 </div>
-                <div class="chart-container" style="height: 220px;"><canvas id="chart-funil"></canvas></div>
+                <div class="chart-container" style="height: 240px;"><canvas id="chart-funil"></canvas></div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -288,7 +288,7 @@
     </div>
 
     <script>
-        // LINK CORRIGIDO DO SEU GOOGLE APPS SCRIPT
+        // LINK DO GOOGLE APPS SCRIPT
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyf3Y5lvdPzUDwcvB6FNP5hkL3C6r0SNh9jXqw-DZiQYPgwFU3iH2deNn2xws42sQlL/exec"; 
 
         let dadosTratados = [];
@@ -304,15 +304,12 @@
             Chart.register(ChartDataLabels);
         }
 
-        // ================= TRATAMENTO DE DATAS (LIÇÃO APRENDIDA BI) =================
         function configurarDatasPadrao() {
             const hoje = new Date();
-            // Data Fim recebe +1 dia para cobrir as frações de horas no filtro do Google Sheets
             document.getElementById("filter-date-start").value = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().split('T')[0];
             document.getElementById("filter-date-end").value = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() + 1).toISOString().split('T')[0];
         }
 
-        // ================= SISTEMA DE LOGIN E PRIVACIDADE =================
         function deslogarUsuario() {
             usuarioLogado = "";
             document.getElementById("tela-login").classList.remove("hidden");
@@ -369,7 +366,6 @@
             }
         }
 
-        // ================= CRUD (OPERAÇÕES DE FORMULÁRIO) =================
         function abrirModalNovo() {
             linhaEmEdicao = null;
             document.getElementById('modal-novo').classList.remove('hidden');
@@ -430,7 +426,6 @@
                 motivo: document.getElementById('novo-motivo').value
             };
 
-            // Comunicação Assíncrona para contornar CORS via POST JSON
             fetch(SCRIPT_URL, {
                 method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
             }).then(() => {
@@ -443,15 +438,12 @@
             });
         }
 
-        // ================= INICIALIZAÇÃO E COMUNICAÇÃO DE DADOS =================
         document.addEventListener("DOMContentLoaded", () => {
             configurarDatasPadrao();
             
-            // Prioridade para Google Script Run (Se aberto via Google Sheets nativo)
             if (typeof google !== 'undefined' && google.script && google.script.run) {
                 google.script.run.withSuccessHandler(inicializarDashboard).puxarDadosPlanilha();
             } else {
-                // Fallback para teste/ambiente externo via JSONP (Evita erro de CORS do navegador)
                 carregarDadosDoServidor();
             }
 
@@ -469,7 +461,6 @@
             document.getElementById("btn-reset-filters").onclick = () => { configurarDatasPadrao(); processarEAtualizarDashboardCompleto(true); };
         });
 
-        // Função de Fallback JSONP
         function carregarDadosDoServidor() {
             if(!SCRIPT_URL.startsWith("http")) return;
             window.handleGoogleData = function(data) {
@@ -484,12 +475,10 @@
             document.body.appendChild(script);
         }
 
-        // ================= MAPEAMENTO INTELIGENTE DE COLUNAS (LIÇÃO APRENDIDA BI) =================
         function inicializarDashboard(rows) {
             if (!rows || rows.length < 2) return;
             const cab = rows[0].map(c => String(c).trim().toLowerCase());
             
-            // Localiza índices dinamicamente, não importa se mudarem de ordem na planilha
             const iDat = cab.findIndex(h => h.includes("data"));
             const iNom = cab.findIndex(h => h.includes("nome"));
             const iTel = cab.findIndex(h => h.includes("telefone") || h.includes("tel"));
@@ -505,7 +494,6 @@
                 if (!col[0] || col[0] === "") continue;
 
                 let dataForm = String(iDat !== -1 ? col[iDat] : col[0]).trim();
-                // Normaliza Data
                 if (dataForm.includes("/")) {
                     const p = dataForm.split("/");
                     if (p.length === 3) dataForm = `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
@@ -536,7 +524,6 @@
             if (usuarioLogado !== "") processarEAtualizarDashboardCompleto(true);
         }
 
-        // ================= FILTRAGEM =================
         function processarEAtualizarDashboardCompleto(resetarPagina = true) {
             if (usuarioLogado === "") return;
             if (resetarPagina) paginaAtual = 1;
@@ -551,10 +538,8 @@
             if (usuarioLogado === "Claudia" || usuarioLogado === "Maicon") tableCons = usuarioLogado;
             const tableStat = document.getElementById("table-filter-status").value;
 
-            // Filtra matriz para os Gráficos
             const filtradosGraficos = dadosTratados.filter(d => (start ? d.data >= start : true) && (end ? d.data <= end : true) && (filterCons === "todos" ? true : d.consultor === filterCons));
 
-            // Atualiza KPIs Numericos Superiores
             document.getElementById("kpi-total-atendimentos").innerText = filtradosGraficos.length;
             document.getElementById("kpi-mes-atual").innerText = filtradosGraficos.length;
             document.getElementById("kpi-orcamentos-enviados").innerText = filtradosGraficos.filter(d => d.orcamento.toLowerCase() === "sim").length;
@@ -562,7 +547,6 @@
 
             renderizarGraficos(filtradosGraficos);
 
-            // Filtra matriz separada para a Tabela (incluindo barras de busca)
             let filtradosTabela = dadosTratados.filter(d => {
                 if (searchTxt !== "") {
                     const bateNome = d.nome.toLowerCase().includes(searchTxt);
@@ -580,7 +564,6 @@
             renderizarTabela(filtradosTabela);
         }
 
-        // ================= TABELA E PAGINAÇÃO =================
         function renderizarTabela(dados) {
             const tbody = document.getElementById("table-body");
             tbody.innerHTML = "";
@@ -646,21 +629,17 @@
         function renderizarGraficos(dados) {
             const cCons = {}, cStat = {}, cCanTotal = {}, cCanVendas = {}, cCanOrcamentos = {}, cData = {}, cMot = {};
             
-            // Variáveis de escopo do Funil Global
             let fAtendimentos = 0, fQualificados = 0, fOrcamentos = 0, fNegociacoes = 0, fVendas = 0;
 
             const motivosPadrao = ["Não resp.", "Preço", "Prazo", "Curioso", "Produto Indisp."];
             motivosPadrao.forEach(m => cMot[m] = 0);
 
-            // Loop único de processamento matemático (Alta Performance)
             dados.forEach(d => { 
                 
-                // Contadores Básicos para Grade 2x2
                 cCons[d.consultor] = (cCons[d.consultor] || 0) + 1; 
                 cStat[d.status] = (cStat[d.status] || 0) + 1; 
                 cData[d.data] = (cData[d.data] || 0) + 1;
                 
-                // Contadores Específicos para o Gráfico de Canais (Atendimentos + Orçamentos)
                 cCanTotal[d.canal] = (cCanTotal[d.canal] || 0) + 1;
                 cCanVendas[d.canal] = cCanVendas[d.canal] || 0;
                 cCanOrcamentos[d.canal] = cCanOrcamentos[d.canal] || 0;
@@ -668,12 +647,10 @@
                 if (d.status === "Venda Efetuada") {
                     cCanVendas[d.canal]++;
                 }
-                
                 if (d.orcamento === "Sim" || d.orcamento === "sim") {
                     cCanOrcamentos[d.canal]++;
                 }
 
-                // Normalização de Strings para Motivos de Encerramento
                 let mTratado = d.motivo || "";
                 if (mTratado.includes("responder")) mTratado = "Não resp.";
                 if (mTratado.includes("Preço") || mTratado.includes("orçamento")) mTratado = "Preço";
@@ -685,15 +662,29 @@
                     cMot[mTratado] = (cMot[mTratado] || 0) + 1;
                 }
 
-                // Lógica de Inteligência do Funil Global
+                // 🚨 Lógica de Inteligência do Funil Global (Estrito - Efeito Cascata Obrigatório)
                 fAtendimentos++; 
-                if (!(d.status === "Encerrado" && (mTratado === "Curioso" || mTratado === "Não resp."))) fQualificados++;
-                if (d.orcamento === "Sim" || d.orcamento === "sim") fOrcamentos++;
-                if (d.status === "Orçamento Enviado" || d.status === "Venda Efetuada" || (d.status === "Encerrado" && (mTratado === "Preço" || mTratado === "Prazo" || mTratado === "Produto Indisp."))) fNegociacoes++;
-                if (d.status === "Venda Efetuada") fVendas++;
+
+                let ignorado = (d.status === "Encerrado" && (mTratado === "Curioso" || mTratado === "Não resp."));
+                if (!ignorado) {
+                    fQualificados++;
+                    
+                    let teveOrcamento = (d.orcamento === "Sim" || d.orcamento === "sim" || d.status === "Orçamento Enviado" || d.status === "Venda Efetuada");
+                    if (teveOrcamento) {
+                        fOrcamentos++;
+                        
+                        let avancouNegociacao = (d.status === "Orçamento Enviado" || d.status === "Venda Efetuada" || d.status === "Em atendimento" || (d.status === "Encerrado" && (mTratado === "Preço" || mTratado === "Prazo" || mTratado === "Produto Indisp.")));
+                        if (avancouNegociacao) {
+                            fNegociacoes++;
+                            
+                            if (d.status === "Venda Efetuada") {
+                                fVendas++;
+                            }
+                        }
+                    }
+                }
             });
 
-            // Configuração Limpa de Eixos para reaproveitamento
             const optVerticaisClean = { 
                 responsive: true, maintainAspectRatio: false, layout: { padding: { top: 25, left: 10, right: 10 } }, 
                 barPercentage: 0.85, categoryPercentage: 0.85,     
@@ -705,7 +696,7 @@
             };
 
             // ========== RENDERIZAÇÃO: DESTAQUE TOPO ==========
-            // Chart 0: Funil Global de Vendas (Ocupa Largura Total)
+            // Chart 0: Funil Global de Vendas (Com visualização grudada)
             if (chartFunilInstance) chartFunilInstance.destroy();
             chartFunilInstance = new Chart(document.getElementById('chart-funil').getContext('2d'), { 
                 type: 'bar', 
@@ -714,7 +705,10 @@
                     datasets: [{
                         data: [fAtendimentos, fQualificados, fOrcamentos, fNegociacoes, fVendas],
                         backgroundColor: ['#94a3b8', '#38bdf8', '#fbbf24', '#a78bfa', '#10b981'], 
-                        borderRadius: 6, barPercentage: 0.6
+                        borderRadius: 2, 
+                        // Remove o espaçamento entre as barras para criar o formato de Funil/Pirâmide
+                        barPercentage: 1.0, 
+                        categoryPercentage: 1.0
                     }] 
                 }, 
                 options: {
@@ -738,14 +732,12 @@
 
 
             // ========== RENDERIZAÇÃO: GRADE 2x2 ==========
-            // Chart 1: Consultores
             if (chartConsultoresInstance) chartConsultoresInstance.destroy();
             chartConsultoresInstance = new Chart(document.getElementById('chart-consultores').getContext('2d'), { 
                 type: 'bar', data: { labels: Object.keys(cCons), datasets: [{ data: Object.values(cCons), backgroundColor: '#3b82f6', borderRadius: 6 }] }, 
                 options: optVerticaisClean, plugins: [ChartDataLabels] 
             });
             
-            // Chart 2: Status
             if (chartStatusInstance) chartStatusInstance.destroy();
             chartStatusInstance = new Chart(document.getElementById('chart-status').getContext('2d'), { 
                 type: 'doughnut', data: { labels: Object.keys(cStat), datasets: [{ data: Object.values(cStat), backgroundColor: ['#10b981', '#3b82f6', '#ef4444', '#f59e0b', '#64748b'], borderWidth: 2 }] }, 
@@ -761,7 +753,6 @@
                 }, plugins: [ChartDataLabels] 
             });
             
-            // Chart 3: Canais (Gráfico Combo com Barras Agrupadas e Linha Flutuante)
             const labelsCanal = Object.keys(cCanTotal);
             const dataVolumeCanal = Object.values(cCanTotal);
             const dataOrcamentosCanal = labelsCanal.map(canal => cCanOrcamentos[canal] || 0);
@@ -790,7 +781,6 @@
                 }, plugins: [ChartDataLabels] 
             });
             
-            // Chart 4: Motivos de Encerramento
             if (chartMotivosInstance) chartMotivosInstance.destroy();
             chartMotivosInstance = new Chart(document.getElementById('chart-motivos').getContext('2d'), { 
                 type: 'bar', data: { labels: Object.keys(cMot), datasets: [{ data: Object.values(cMot), backgroundColor: '#ef4444', borderRadius: 6 }] }, 
@@ -803,7 +793,6 @@
             });
 
             // ========== RENDERIZAÇÃO: EVOLUÇÃO ==========
-            // Chart 5: Evolução Diária
             const dOrd = Object.keys(cData).sort();
             if (chartEvolucaoInstance) chartEvolucaoInstance.destroy();
             chartEvolucaoInstance = new Chart(document.getElementById('chart-evolucao').getContext('2d'), { 

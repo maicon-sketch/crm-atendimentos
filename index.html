@@ -610,7 +610,7 @@
         }
 
         function renderizarGraficos(dados) {
-            const cCons = {}, cStat = {}, cCanTotal = {}, cCanVendas = {}, cData = {}, cMot = {};
+            const cCons = {}, cStat = {}, cCanTotal = {}, cCanVendas = {}, cCanOrcamentos = {}, cData = {}, cMot = {};
             
             const motivosPadrao = ["Não resp.", "Preço", "Prazo", "Curioso", "Produto Indisp."];
             motivosPadrao.forEach(m => cMot[m] = 0);
@@ -622,8 +622,15 @@
                 
                 cCanTotal[d.canal] = (cCanTotal[d.canal] || 0) + 1;
                 cCanVendas[d.canal] = cCanVendas[d.canal] || 0;
+                cCanOrcamentos[d.canal] = cCanOrcamentos[d.canal] || 0;
+
                 if (d.status === "Venda Efetuada") {
                     cCanVendas[d.canal]++;
+                }
+                
+                // CONTA OS ORÇAMENTOS ENVIADOS
+                if (d.orcamento === "Sim") {
+                    cCanOrcamentos[d.canal]++;
                 }
 
                 if (d.status === "Encerrado" && d.motivo && d.motivo !== "") {
@@ -699,9 +706,10 @@
                 plugins: [ChartDataLabels] 
             });
             
-            // 🚨 CHART 3: CANAIS (Ajuste visual da linha e posição do rótulo)
+            // 🚨 CHART 3: CANAIS (Combo Chart de Funil com Legenda)
             const labelsCanal = Object.keys(cCanTotal);
             const dataVolumeCanal = Object.values(cCanTotal);
+            const dataOrcamentosCanal = labelsCanal.map(canal => cCanOrcamentos[canal]);
             const dataPercentualCanal = labelsCanal.map(canal => {
                 return cCanTotal[canal] > 0 ? Math.round((cCanVendas[canal] / cCanTotal[canal]) * 100) : 0;
             });
@@ -716,18 +724,18 @@
                             type: 'line',
                             label: 'Conversão',
                             data: dataPercentualCanal,
-                            borderColor: '#60a5fa', // Azul claro
+                            borderColor: '#60a5fa', 
                             backgroundColor: '#fff',
-                            borderWidth: 1.5,       // Fina
+                            borderWidth: 1.5,       
                             pointRadius: 4,
                             pointBackgroundColor: '#fff',
                             pointBorderWidth: 1.5,
                             tension: 0.3,
                             yAxisID: 'y1',
                             datalabels: {
-                                align: 'top',       // Acima da linha/bolinha
-                                offset: 6,          // Espaçamento para não colar no ponto
-                                color: '#000000',   // Rótulo preto
+                                align: 'top',       
+                                offset: 6,          
+                                color: '#000000',   
                                 font: { weight: 'bold', size: 10 },
                                 formatter: (val) => val + '%'
                             }
@@ -738,14 +746,19 @@
                             data: dataVolumeCanal,
                             backgroundColor: '#0f766e', 
                             borderRadius: 6,
-                            maxBarThickness: 50,
+                            maxBarThickness: 40,
                             yAxisID: 'y',
-                            datalabels: {
-                                align: 'top',
-                                anchor: 'end',
-                                color: '#475569',
-                                font: { weight: 'bold', size: 11 }
-                            }
+                            datalabels: { align: 'top', anchor: 'end', color: '#475569', font: { weight: 'bold', size: 11 } }
+                        },
+                        {
+                            type: 'bar',
+                            label: 'Orçamentos',
+                            data: dataOrcamentosCanal,
+                            backgroundColor: '#f59e0b', // Cor Laranja/Âmbar
+                            borderRadius: 6,
+                            maxBarThickness: 40,
+                            yAxisID: 'y',
+                            datalabels: { align: 'top', anchor: 'end', color: '#475569', font: { weight: 'bold', size: 11 } }
                         }
                     ] 
                 }, 
@@ -756,17 +769,17 @@
                     barPercentage: 0.85,          
                     categoryPercentage: 0.85,     
                     scales: { 
-                        y: { 
-                            type: 'linear', display: false, position: 'left', beginAtZero: true, 
-                            suggestedMax: Math.max(...dataVolumeCanal) * 1.15 
-                        },
-                        y1: { 
-                            type: 'linear', display: false, position: 'right', beginAtZero: true, 
-                            suggestedMax: 110 
-                        },
+                        y: { type: 'linear', display: false, position: 'left', beginAtZero: true, suggestedMax: Math.max(...dataVolumeCanal) * 1.15 },
+                        y1: { type: 'linear', display: false, position: 'right', beginAtZero: true, suggestedMax: 110 },
                         x: { grid: { display: false }, ticks: { font: { size: 10, weight: '600' } }, border: { display: false } } 
                     },
-                    plugins: { legend: { display: false } }
+                    plugins: { 
+                        legend: { 
+                            display: true, 
+                            position: 'bottom',
+                            labels: { boxWidth: 10, padding: 15, font: { size: 10, weight: '500' } }
+                        } 
+                    }
                 },
                 plugins: [ChartDataLabels] 
             });
@@ -779,8 +792,7 @@
                 options: {
                     responsive: true, maintainAspectRatio: false, indexAxis: 'y',
                     layout: { padding: { right: 35, top: 10, bottom: 10 } },
-                    barPercentage: 0.85,
-                    categoryPercentage: 0.85,
+                    barPercentage: 0.85, categoryPercentage: 0.85,
                     scales: {
                         y: { grid: { display: false }, ticks: { font: { size: 10, weight: '600' } }, border: { display: false } },
                         x: { beginAtZero: true, grid: { display: false }, ticks: { display: false }, border: { display: false } }

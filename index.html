@@ -705,10 +705,10 @@
                 plugins: [ChartDataLabels] 
             });
             
-            // CHART 3: CANAIS (Duas barras agrupadas + linha azul-claro de conversão no topo)
+            // 🚨 CHART 3: CANAIS (Barras Corrigidas e Perfeitamente Agrupadas Lado a Lado)
             const labelsCanal = Object.keys(cCanTotal);
             const dataVolumeCanal = Object.values(cCanTotal);
-            const dataOrcamentosCanal = labelsCanal.map(canal => dataOrcamentosCanal = cCanOrcamentos[canal] || 0);
+            const dataOrcamentosCanal = labelsCanal.map(canal => cCanOrcamentos[canal] || 0);
             const dataPercentualCanal = labelsCanal.map(canal => {
                 return cCanTotal[canal] > 0 ? Math.round((cCanVendas[canal] / cCanTotal[canal]) * 100) : 0;
             });
@@ -745,17 +745,15 @@
                             data: dataVolumeCanal,
                             backgroundColor: '#0f766e', 
                             borderRadius: 6,
-                            maxBarThickness: 35,
                             yAxisID: 'y',
                             datalabels: { align: 'top', anchor: 'end', color: '#475569', font: { weight: 'bold', size: 11 } }
                         },
                         {
                             type: 'bar',
                             label: 'Orçamentos',
-                            data: labelsCanal.map(canal => cCanOrcamentos[canal]),
+                            data: dataOrcamentosCanal,
                             backgroundColor: '#f59e0b', 
                             borderRadius: 6,
-                            maxBarThickness: 35,
                             yAxisID: 'y',
                             datalabels: { align: 'top', anchor: 'end', color: '#475569', font: { weight: 'bold', size: 11 } }
                         }
@@ -764,11 +762,12 @@
                 options: {
                     responsive: true, 
                     maintainAspectRatio: false, 
-                    layout: { padding: { top: 30, left: 10, right: 10 } }, 
-                    barPercentage: 0.85,          
-                    categoryPercentage: 0.85,     
+                    layout: { padding: { top: 30, left: 15, right: 15, bottom: 5 } }, 
+                    // As duas propriedades abaixo unem e agrupam as barras coladas por categoria
+                    barPercentage: 0.8,          
+                    categoryPercentage: 0.6,     
                     scales: { 
-                        y: { type: 'linear', display: false, position: 'left', beginAtZero: true, suggestedMax: Math.max(...dataVolumeCanal) * 1.15 },
+                        y: { type: 'linear', display: false, position: 'left', beginAtZero: true, suggestedMax: Math.max(...dataVolumeCanal) * 1.2 },
                         y1: { type: 'linear', display: false, position: 'right', beginAtZero: true, suggestedMax: 110 },
                         x: { grid: { display: false }, ticks: { font: { size: 10, weight: '600' } }, border: { display: false } } 
                     },

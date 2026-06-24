@@ -303,10 +303,15 @@
             Chart.register(ChartDataLabels);
         }
 
+        function formatarDataLocal(ano, mes, dia) {
+            return ano + '-' + String(mes).padStart(2, '0') + '-' + String(dia).padStart(2, '0');
+        }
+
+        // BI BRINDADO: Usa apenas comandos locais, eliminando saltos de fuso horário (UTC)
         function configurarDatasPadrao() {
             const hoje = new Date();
-            document.getElementById("filter-date-start").value = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().split('T')[0];
-            document.getElementById("filter-date-end").value = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() + 1).toISOString().split('T')[0];
+            document.getElementById("filter-date-start").value = formatarDataLocal(hoje.getFullYear(), hoje.getMonth() + 1, 1);
+            document.getElementById("filter-date-end").value = formatarDataLocal(hoje.getFullYear(), hoje.getMonth() + 1, hoje.getDate());
         }
 
         function deslogarUsuario() {
@@ -369,7 +374,11 @@
             linhaEmEdicao = null;
             document.getElementById('modal-novo').classList.remove('hidden');
             document.getElementById('form-novo').reset();
-            document.getElementById('novo-data').valueAsDate = new Date();
+            
+            // Corrige o salto de data em registos à noite
+            const hoje = new Date();
+            document.getElementById('novo-data').value = formatarDataLocal(hoje.getFullYear(), hoje.getMonth() + 1, hoje.getDate());
+            
             verificarStatusMotivo();
             
             const campoConsultor = document.getElementById('novo-consultor');
@@ -490,7 +499,9 @@
             dadosTratados = [];
             for (let i = 1; i < rows.length; i++) {
                 const col = rows[i];
-                if (!col[0] || col[0] === "") continue;
+                
+                // CRUCIAL: Avalia se a linha é válida pelo Nome do Cliente, e não pela coluna A (evita ocultar linhas)
+                if (iNom !== -1 && (!col[iNom] || col[iNom].trim() === "")) continue;
 
                 let dataForm = String(iDat !== -1 ? col[iDat] : col[0]).trim();
                 if (dataForm.includes("/")) {
@@ -650,7 +661,7 @@
                     cMot[mTratado] = (cMot[mTratado] || 0) + 1;
                 }
 
-                // LÓGICA TRUE WATERFALL COM "PRODUTO INDISPONÍVEL" EM DESCARTE
+                // LOGICA TRUE WATERFALL REVISADA (COM DESCARTE DE PRODUTO INDISPONÍVEL)
                 fAtendimentos++; 
 
                 var passouPeloOrcamento = (d.orcamento === "Sim" || d.orcamento === "sim" || d.status === "Orçamento Enviado" || d.status === "Venda Efetuada");
@@ -670,12 +681,10 @@
                 }
             });
 
-            // 🚨 ALINHAMENTO ABSOLUTO DE KPIs (Garante paridade total Funil vs Cards)
             document.getElementById("kpi-total-atendimentos").innerText = fAtendimentos;
             document.getElementById("kpi-mes-atual").innerText = fAtendimentos;
             document.getElementById("kpi-orcamentos-enviados").innerText = fOrcamentos;
             
-            // Nova Regra de Conversão: Vendas / Orçamentos
             var taxaConversaoReal = fOrcamentos > 0 ? Math.round((fVendas / fOrcamentos) * 100) : 0;
             document.getElementById("kpi-taxa-conclusao").innerText = taxaConversaoReal + "%";
 
@@ -721,7 +730,6 @@
                         datalabels: { 
                             align: 'right', anchor: 'end', color: '#1e293b', font: { weight: 'bold', size: 12 },
                             formatter: (val, ctx) => {
-                                // 🚨 Tratamento da legenda de conversão no motor do gráfico
                                 if (ctx.dataIndex === 3) {
                                     var pct = fOrcamentos > 0 ? Math.round((val / fOrcamentos) * 100) : 0;
                                     return val + ' (' + pct + '% Conv.)';
@@ -742,7 +750,7 @@
                 options: optVerticaisClean, plugins: [ChartDataLabels] 
             });
             
-            // ========== 3. GRÁFICO POR STATUS (Cores Fixas Alinhadas) ==========
+            // ========== 3. GRÁFICO POR STATUS (Cores Dinâmicas Fixas) ==========
             var labelsStatus = Object.keys(cStat);
             var colorMap = {
                 "Venda Efetuada": "#10b981",    // Verde

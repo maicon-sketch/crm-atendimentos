@@ -159,7 +159,7 @@
     </div>
 
     <div id="banner-erro" class="bg-rose-600 text-white px-4 py-3 text-center text-xs font-bold hidden sticky top-0 z-50 shadow-md">
-        <i class="fa-solid fa-triangle-exclamation mr-1"></i> Falha de Conexão: O servidor demorou a responder ou a internet falhou.
+        <i class="fa-solid fa-triangle-exclamation mr-1"></i> Falha ao conectar. Atualizando...
     </div>
 
     <div>
@@ -290,7 +290,6 @@
     </div>
 
     <script>
-        // SE AINDA TIVER ERRO AQUI, USE O LINK DA "NOVA IMPLANTAÇÃO" QUE O GOOGLE GEROU HOJE
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyf3Y5lvdPzUDwcvB6FNP5hkL3C6r0SNh9jXqw-DZiQYPgwFU3iH2deNn2xws42sQlL/exec"; 
 
         let dadosTratados = [];
@@ -435,8 +434,12 @@
                 motivo: document.getElementById('novo-motivo').value
             };
 
+            // 🚨 O PULO DO GATO: text/plain ignora a barreira de segurança CORS do navegador
             fetch(SCRIPT_URL, {
-                method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+                method: 'POST', 
+                mode: 'no-cors', 
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
+                body: JSON.stringify(payload)
             }).then(() => {
                 fecharModalNovo();
                 btnSalvar.disabled = false;
@@ -449,7 +452,7 @@
 
         document.addEventListener("DOMContentLoaded", () => {
             configurarDatasPadrao();
-            carregarDadosDoServidor(); // Chama a via rápida e imune de JSONP
+            carregarDadosDoServidor();
 
             ["filter-date-start", "filter-date-end", "filter-consultant", "table-filter-consultant", "table-filter-status"].forEach(id => {
                 document.getElementById(id).addEventListener("change", () => {
@@ -465,11 +468,9 @@
             document.getElementById("btn-reset-filters").onclick = () => { configurarDatasPadrao(); processarEAtualizarDashboardCompleto(true); };
         });
 
-        // 🚨 SISTEMA DE CARREGAMENTO ANTIFALHA (QUEBRA DE CACHE)
         function carregarDadosDoServidor() {
             if(!SCRIPT_URL.startsWith("http")) return;
             
-            // Remove a tag de script antiga para evitar encavalamento ao salvar
             var scriptAntigo = document.getElementById('jsonp-bridge');
             if (scriptAntigo) scriptAntigo.remove();
 
@@ -478,13 +479,10 @@
                 if (data && !data.erro) {
                     inicializarDashboard(data);
                 }
-                var scriptUsado = document.getElementById('jsonp-bridge');
-                if (scriptUsado) scriptUsado.remove();
             };
-
+            
             const script = document.createElement('script');
             script.id = 'jsonp-bridge';
-            // O getTime() no final impede o navegador de usar dados em cache
             script.src = SCRIPT_URL + "?callback=handleGoogleData&t=" + new Date().getTime();
             script.onerror = () => document.getElementById("banner-erro").classList.remove("hidden");
             document.body.appendChild(script);
@@ -705,7 +703,6 @@
                 plugins: { legend: { display: false }, datalabels: { display: true, anchor: 'end', align: 'top', color: '#475569', font: { weight: 'bold', size: 11 } } }
             };
 
-            // ========== 1. FUNIL GLOBAL HORIZONTAL ==========
             if (chartFunilInstance) chartFunilInstance.destroy();
             chartFunilInstance = new Chart(document.getElementById('chart-funil').getContext('2d'), { 
                 type: 'bar', 
@@ -726,11 +723,7 @@
                     layout: { padding: { top: 10, left: 10, right: 85, bottom: 10 } }, 
                     scales: { 
                         x: { display: false, beginAtZero: true, suggestedMax: fAtendimentos * 1.15 },
-                        y: { 
-                            grid: { display: false }, 
-                            ticks: { font: { size: 11, weight: 'bold' } }, 
-                            border: { display: false }
-                        } 
+                        y: { grid: { display: false }, ticks: { font: { size: 11, weight: 'bold' } }, border: { display: false } } 
                     },
                     plugins: { 
                         legend: { display: false },
@@ -750,14 +743,12 @@
                 }, plugins: [ChartDataLabels] 
             });
 
-            // ========== 2. GRÁFICO POR CONSULTOR ==========
             if (chartConsultoresInstance) chartConsultoresInstance.destroy();
             chartConsultoresInstance = new Chart(document.getElementById('chart-consultores').getContext('2d'), { 
                 type: 'bar', data: { labels: Object.keys(cCons), datasets: [{ data: Object.values(cCons), backgroundColor: '#3b82f6', borderRadius: 6 }] }, 
                 options: optVerticaisClean, plugins: [ChartDataLabels] 
             });
             
-            // ========== 3. GRÁFICO POR STATUS ==========
             var labelsStatus = Object.keys(cStat);
             var colorMap = {
                 "Venda Efetuada": "#10b981",    
@@ -770,10 +761,7 @@
             if (chartStatusInstance) chartStatusInstance.destroy();
             chartStatusInstance = new Chart(document.getElementById('chart-status').getContext('2d'), { 
                 type: 'doughnut', 
-                data: { 
-                    labels: labelsStatus, 
-                    datasets: [{ data: Object.values(cStat), backgroundColor: colorsStatus, borderWidth: 2 }] 
-                }, 
+                data: { labels: labelsStatus, datasets: [{ data: Object.values(cStat), backgroundColor: colorsStatus, borderWidth: 2 }] }, 
                 options: { 
                     cutout: '50%', responsive: true, maintainAspectRatio: false, layout: { padding: 10 },
                     plugins: { 
@@ -786,7 +774,6 @@
                 }, plugins: [ChartDataLabels] 
             });
             
-            // ========== 4. GRÁFICO POR CANAL ==========
             const labelsCanal = Object.keys(cCanTotal);
             const dataVolumeCanal = Object.values(cCanTotal);
             const dataOrcamentosCanal = labelsCanal.map(function(canal) { return cCanOrcamentos[canal] || 0; }); 
@@ -815,7 +802,6 @@
                 }, plugins: [ChartDataLabels] 
             });
             
-            // ========== 5. GRÁFICO MOTIVOS DE ENCERRAMENTO ==========
             if (chartMotivosInstance) chartMotivosInstance.destroy();
             chartMotivosInstance = new Chart(document.getElementById('chart-motivos').getContext('2d'), { 
                 type: 'bar', data: { labels: Object.keys(cMot), datasets: [{ data: Object.values(cMot), backgroundColor: '#ef4444', borderRadius: 6 }] }, 
@@ -827,7 +813,6 @@
                 }, plugins: [ChartDataLabels] 
             });
 
-            // ========== 6. GRÁFICO EVOLUÇÃO DIÁRIA ==========
             const dOrd = Object.keys(cData).sort();
             if (chartEvolucaoInstance) chartEvolucaoInstance.destroy();
             chartEvolucaoInstance = new Chart(document.getElementById('chart-evolucao').getContext('2d'), { 

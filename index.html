@@ -143,6 +143,8 @@
                             <option value="Prazo">Prazo</option>
                             <option value="Curioso">Curioso</option>
                             <option value="Produto Indisp.">Produto Indisp.</option>
+                            <option value="Concorrente">Concorrente</option>
+                            <option value="Modelo Indisp.">Modelo Indisp.</option>
                         </select>
                     </div>
 
@@ -291,7 +293,7 @@
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyf3Y5lvdPzUDwcvB6FNP5hkL3C6r0SNh9jXqw-DZiQYPgwFU3iH2deNn2xws42sQlL/exec"; 
 
         let dadosTratados = [];
-        let linhaEmEdicao = null; 
+        let líneaEmEdicao = null; 
         let paginaAtual = 1;         
         const itensPorPagina = 10;   
         
@@ -307,7 +309,6 @@
             return ano + '-' + String(mes).padStart(2, '0') + '-' + String(dia).padStart(2, '0');
         }
 
-        // BI BRINDADO: Usa apenas comandos locais, eliminando saltos de fuso horário (UTC)
         function configurarDatasPadrao() {
             const hoje = new Date();
             document.getElementById("filter-date-start").value = formatarDataLocal(hoje.getFullYear(), hoje.getMonth() + 1, 1);
@@ -375,7 +376,6 @@
             document.getElementById('modal-novo').classList.remove('hidden');
             document.getElementById('form-novo').reset();
             
-            // Corrige o salto de data em registos à noite
             const hoje = new Date();
             document.getElementById('novo-data').value = formatarDataLocal(hoje.getFullYear(), hoje.getMonth() + 1, hoje.getDate());
             
@@ -446,29 +446,6 @@
             });
         }
 
-        document.addEventListener("DOMContentLoaded", () => {
-            configurarDatasPadrao();
-            
-            if (typeof google !== 'undefined' && google.script && google.script.run) {
-                google.script.run.withSuccessHandler(inicializarDashboard).puxarDadosPlanilha();
-            } else {
-                carregarDadosDoServidor();
-            }
-
-            ["filter-date-start", "filter-date-end", "filter-consultant", "table-filter-consultant", "table-filter-status"].forEach(id => {
-                document.getElementById(id).addEventListener("change", () => {
-                    const resetar = (id !== "table-filter-consultant" && id !== "table-filter-status");
-                    processarEAtualizarDashboardCompleto(resetar);
-                });
-            });
-            
-            document.getElementById("table-search").addEventListener("input", () => {
-                processarEAtualizarDashboardCompleto(true);
-            });
-            
-            document.getElementById("btn-reset-filters").onclick = () => { configurarDatasPadrao(); processarEAtualizarDashboardCompleto(true); };
-        });
-
         function carregarDadosDoServidor() {
             if(!SCRIPT_URL.startsWith("http")) return;
             window.handleGoogleData = function(data) {
@@ -500,7 +477,6 @@
             for (let i = 1; i < rows.length; i++) {
                 const col = rows[i];
                 
-                // CRUCIAL: Avalia se a linha é válida pelo Nome do Cliente, e não pela coluna A (evita ocultar linhas)
                 if (iNom !== -1 && (!col[iNom] || col[iNom].trim() === "")) continue;
 
                 let dataForm = String(iDat !== -1 ? col[iDat] : col[0]).trim();
@@ -635,7 +611,8 @@
             
             let fAtendimentos = 0, fQualificados = 0, fOrcamentos = 0, fVendas = 0;
 
-            const motivosPadrao = ["Não resp.", "Preço", "Prazo", "Curioso", "Produto Indisp."];
+            // 🚨 EXPANSÃO DA GRADE DE MOTIVOS COM AS OPÇÕES ATUALIZADAS
+            const motivosPadrao = ["Não resp.", "Preço", "Prazo", "Curioso", "Produto Indisp.", "Concorrente", "Modelo Indisp."];
             motivosPadrao.forEach(m => cMot[m] = 0);
 
             dados.forEach(d => { 
@@ -655,13 +632,16 @@
                 if (mTratado.includes("Preço") || mTratado.includes("orçamento")) mTratado = "Preço";
                 if (mTratado.includes("Prazo") || mTratado.includes("longo")) mTratado = "Prazo";
                 if (mTratado.includes("pesquisando") || mTratado.includes("interesse")) mTratado = "Curioso";
-                if (mTratado.includes("indisponível")) mTratado = "Produto Indisp.";
+                if (mTratado.includes("indisponível") || mTratado.includes("Produto")) mTratado = "Produto Indisp.";
+                // Normalizações extras preventivas
+                if (mTratado.toLowerCase().includes("concorrente")) mTratado = "Concorrente";
+                if (mTratado.toLowerCase().includes("modelo")) mTratado = "Modelo Indisp.";
 
                 if (d.status === "Encerrado" && d.motivo && d.motivo !== "") {
                     cMot[mTratado] = (cMot[mTratado] || 0) + 1;
                 }
 
-                // LOGICA TRUE WATERFALL REVISADA (COM DESCARTE DE PRODUTO INDISPONÍVEL)
+                // LÓGICA TRUE WATERFALL COM AS NOVAS REGRAS ESTRITAS DE QUALIFICAÇÃO
                 fAtendimentos++; 
 
                 var passouPeloOrcamento = (d.orcamento === "Sim" || d.orcamento === "sim" || d.status === "Orçamento Enviado" || d.status === "Venda Efetuada");
@@ -719,11 +699,7 @@
                     layout: { padding: { top: 10, left: 10, right: 85, bottom: 10 } }, 
                     scales: { 
                         x: { display: false, beginAtZero: true, suggestedMax: fAtendimentos * 1.15 },
-                        y: { 
-                            grid: { display: false }, 
-                            ticks: { font: { size: 11, weight: 'bold' } }, 
-                            border: { display: false }
-                        } 
+                        y: { grid: { display: false }, ticks: { font: { size: 11, weight: 'bold' } }, border: { display: false } } 
                     },
                     plugins: { 
                         legend: { display: false },
@@ -750,13 +726,13 @@
                 options: optVerticaisClean, plugins: [ChartDataLabels] 
             });
             
-            // ========== 3. GRÁFICO POR STATUS (Cores Dinâmicas Fixas) ==========
+            // ========== 3. GRÁFICO POR STATUS ==========
             var labelsStatus = Object.keys(cStat);
             var colorMap = {
-                "Venda Efetuada": "#10b981",    // Verde
-                "Orçamento Enviado": "#fbbf24", // Amarelo
-                "Em atendimento": "#3b82f6",    // Azul
-                "Encerrado": "#ef4444"          // Vermelho
+                "Venda Efetuada": "#10b981",    
+                "Orçamento Enviado": "#fbbf24", 
+                "Em atendimento": "#3b82f6",    
+                "Encerrado": "#ef4444"          
             };
             var colorsStatus = labelsStatus.map(function(label) { return colorMap[label] || "#64748b"; });
 
@@ -808,7 +784,7 @@
                 }, plugins: [ChartDataLabels] 
             });
             
-            // ========== 5. GRÁFICO MOTIVOS DE ENCERRAMENTO ==========
+            // ========== 5. GRÁFICO MOTIVOS DE ENCERRAMENTO (CORES CALIBRADAS) ==========
             if (chartMotivosInstance) chartMotivosInstance.destroy();
             chartMotivosInstance = new Chart(document.getElementById('chart-motivos').getContext('2d'), { 
                 type: 'bar', data: { labels: Object.keys(cMot), datasets: [{ data: Object.values(cMot), backgroundColor: '#ef4444', borderRadius: 6 }] }, 

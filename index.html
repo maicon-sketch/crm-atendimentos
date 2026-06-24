@@ -293,7 +293,7 @@
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyf3Y5lvdPzUDwcvB6FNP5hkL3C6r0SNh9jXqw-DZiQYPgwFU3iH2deNn2xws42sQlL/exec"; 
 
         let dadosTratados = [];
-        let líneaEmEdicao = null; 
+        let linhaEmEdicao = null; 
         let paginaAtual = 1;         
         const itensPorPagina = 10;   
         
@@ -445,6 +445,30 @@
                 btnSalvar.disabled = false;
             });
         }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            configurarDatasPadrao();
+            
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+                // 🚨 CORREÇÃO DO ERRO DE ESCRITA DA CHAMADA PRINCIPAL
+                google.script.run.withSuccessHandler(inicializarDashboard).puxarDadosPlanilha();
+            } else {
+                carregarDadosDoServidor();
+            }
+
+            ["filter-date-start", "filter-date-end", "filter-consultant", "table-filter-consultant", "table-filter-status"].forEach(id => {
+                document.getElementById(id).addEventListener("change", () => {
+                    const resetar = (id !== "table-filter-consultant" && id !== "table-filter-status");
+                    processarEAtualizarDashboardCompleto(resetar);
+                });
+            });
+            
+            document.getElementById("table-search").addEventListener("input", () => {
+                processarEAtualizarDashboardCompleto(true);
+            });
+            
+            document.getElementById("btn-reset-filters").onclick = () => { configurarDatasPadrao(); processarEAtualizarDashboardCompleto(true); };
+        });
 
         function carregarDadosDoServidor() {
             if(!SCRIPT_URL.startsWith("http")) return;
@@ -611,7 +635,6 @@
             
             let fAtendimentos = 0, fQualificados = 0, fOrcamentos = 0, fVendas = 0;
 
-            // 🚨 EXPANSÃO DA GRADE DE MOTIVOS COM AS OPÇÕES ATUALIZADAS
             const motivosPadrao = ["Não resp.", "Preço", "Prazo", "Curioso", "Produto Indisp.", "Concorrente", "Modelo Indisp."];
             motivosPadrao.forEach(m => cMot[m] = 0);
 
@@ -633,7 +656,6 @@
                 if (mTratado.includes("Prazo") || mTratado.includes("longo")) mTratado = "Prazo";
                 if (mTratado.includes("pesquisando") || mTratado.includes("interesse")) mTratado = "Curioso";
                 if (mTratado.includes("indisponível") || mTratado.includes("Produto")) mTratado = "Produto Indisp.";
-                // Normalizações extras preventivas
                 if (mTratado.toLowerCase().includes("concorrente")) mTratado = "Concorrente";
                 if (mTratado.toLowerCase().includes("modelo")) mTratado = "Modelo Indisp.";
 
@@ -641,7 +663,6 @@
                     cMot[mTratado] = (cMot[mTratado] || 0) + 1;
                 }
 
-                // LÓGICA TRUE WATERFALL COM AS NOVAS REGRAS ESTRITAS DE QUALIFICAÇÃO
                 fAtendimentos++; 
 
                 var passouPeloOrcamento = (d.orcamento === "Sim" || d.orcamento === "sim" || d.status === "Orçamento Enviado" || d.status === "Venda Efetuada");
@@ -678,7 +699,7 @@
                 plugins: { legend: { display: false }, datalabels: { display: true, anchor: 'end', align: 'top', color: '#475569', font: { weight: 'bold', size: 11 } } }
             };
 
-            // ========== 1. FUNIL GLOBAL DE VENDAS HORIZONTAL DEITADO CONTÍNUO ==========
+            // ========== 1. FUNIL GLOBAL HORIZONTAL ==========
             if (chartFunilInstance) chartFunilInstance.destroy();
             chartFunilInstance = new Chart(document.getElementById('chart-funil').getContext('2d'), { 
                 type: 'bar', 
@@ -699,7 +720,11 @@
                     layout: { padding: { top: 10, left: 10, right: 85, bottom: 10 } }, 
                     scales: { 
                         x: { display: false, beginAtZero: true, suggestedMax: fAtendimentos * 1.15 },
-                        y: { grid: { display: false }, ticks: { font: { size: 11, weight: 'bold' } }, border: { display: false } } 
+                        y: { 
+                            grid: { display: false }, 
+                            ticks: { font: { size: 11, weight: 'bold' } }, 
+                            border: { display: false }
+                        } 
                     },
                     plugins: { 
                         legend: { display: false },
@@ -784,7 +809,7 @@
                 }, plugins: [ChartDataLabels] 
             });
             
-            // ========== 5. GRÁFICO MOTIVOS DE ENCERRAMENTO (CORES CALIBRADAS) ==========
+            // ========== 5. GRÁFICO MOTIVOS DE ENCERRAMENTO ==========
             if (chartMotivosInstance) chartMotivosInstance.destroy();
             chartMotivosInstance = new Chart(document.getElementById('chart-motivos').getContext('2d'), { 
                 type: 'bar', data: { labels: Object.keys(cMot), datasets: [{ data: Object.values(cMot), backgroundColor: '#ef4444', borderRadius: 6 }] }, 
@@ -792,7 +817,7 @@
                     responsive: true, maintainAspectRatio: false, indexAxis: 'y', layout: { padding: { right: 35, top: 10, bottom: 10 } },
                     barPercentage: 0.85, categoryPercentage: 0.85,
                     scales: { y: { grid: { display: false }, ticks: { font: { size: 10, weight: '600' } }, border: { display: false } }, x: { beginAtZero: true, grid: { display: false }, ticks: { display: false }, border: { display: false } } },
-                    plugins: { legend: { display: false }, datalabels: { display: true, anchor: 'end', align: 'right', color: '#475569', font: { weight: 'bold', size: 11 } } }
+                    plugins: { legend: false, datalabels: { display: true, anchor: 'end', align: 'right', color: '#475569', font: { weight: 'bold', size: 11 } } }
                 }, plugins: [ChartDataLabels] 
             });
 

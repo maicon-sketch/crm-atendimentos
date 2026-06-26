@@ -138,7 +138,8 @@
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Motivo do Encerramento</label>
                         <select id="novo-motivo" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:border-teal-500 outline-none">
                             <option value="">Selecione o motivo...</option>
-                            <option value="Não resp.">Não resp.</option>
+                            <option value="Não Resp. (Pré-Orç.)">Não Resp. (Pré-Orç.)</option>
+                            <option value="Não Resp. (Pós-Orç.)">Não Resp. (Pós-Orç.)</option>
                             <option value="Preço">Preço</option>
                             <option value="Prazo">Prazo</option>
                             <option value="Curioso">Curioso</option>
@@ -434,7 +435,6 @@
                 motivo: document.getElementById('novo-motivo').value
             };
 
-            // 🚨 O PULO DO GATO: text/plain ignora a barreira de segurança CORS do navegador
             fetch(SCRIPT_URL, {
                 method: 'POST', 
                 mode: 'no-cors', 
@@ -639,7 +639,8 @@
             
             let fAtendimentos = 0, fQualificados = 0, fOrcamentos = 0, fVendas = 0;
 
-            const motivosPadrao = ["Não resp.", "Preço", "Prazo", "Curioso", "Produto Indisp.", "Concorrente", "Modelo Indisp."];
+            // 🚨 NOVA GRADE DE MOTIVOS
+            const motivosPadrao = ["Não Resp. (Pré-Orç.)", "Não Resp. (Pós-Orç.)", "Preço", "Prazo", "Curioso", "Produto Indisp.", "Concorrente", "Modelo Indisp."];
             motivosPadrao.forEach(m => cMot[m] = 0);
 
             dados.forEach(d => { 
@@ -655,7 +656,12 @@
                 if (d.orcamento === "Sim" || d.orcamento === "sim") cCanOrcamentos[d.canal]++;
 
                 let mTratado = d.motivo || "";
-                if (mTratado.includes("responder")) mTratado = "Não resp.";
+                
+                // 🚨 MAPEAMENTO INTELIGENTE DE LEGADOS E NOVOS MOTIVOS
+                if (mTratado.includes("responder") || mTratado === "Não resp.") mTratado = "Não Resp. (Pré-Orç.)";
+                if (mTratado.includes("Pré")) mTratado = "Não Resp. (Pré-Orç.)";
+                if (mTratado.includes("Pós") || mTratado.includes("Parou")) mTratado = "Não Resp. (Pós-Orç.)";
+                
                 if (mTratado.includes("Preço") || mTratado.includes("orçamento")) mTratado = "Preço";
                 if (mTratado.includes("Prazo") || mTratado.includes("longo")) mTratado = "Prazo";
                 if (mTratado.includes("pesquisando") || mTratado.includes("interesse")) mTratado = "Curioso";
@@ -669,8 +675,11 @@
 
                 fAtendimentos++; 
 
-                var passouPeloOrcamento = (d.orcamento === "Sim" || d.orcamento === "sim" || d.status === "Orçamento Enviado" || d.status === "Venda Efetuada");
-                var leadNaoQualificado = (d.status === "Encerrado" && (mTratado === "Curioso" || mTratado === "Não resp." || mTratado === "Produto Indisp."));
+                // 🚨 TRAVA DE SEGURANÇA: "Pós-Orç." garante passagem pelo Orçamento automaticamente
+                var passouPeloOrcamento = (d.orcamento === "Sim" || d.orcamento === "sim" || d.status === "Orçamento Enviado" || d.status === "Venda Efetuada" || mTratado === "Não Resp. (Pós-Orç.)");
+                
+                // 🚨 REGRA ATUALIZADA: Apenas o "Não Resp. (Pré-Orç.)" é descartado na boca do funil
+                var leadNaoQualificado = (d.status === "Encerrado" && (mTratado === "Curioso" || mTratado === "Não Resp. (Pré-Orç.)" || mTratado === "Produto Indisp."));
 
                 if (d.status === "Venda Efetuada") {
                     fVendas++;

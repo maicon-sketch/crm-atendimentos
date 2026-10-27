@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>CRM Atendimentos</title>
     
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="CRM Atendimentos">
     <meta name="theme-color" content="#0f172a"> 
     
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
@@ -70,7 +67,7 @@
     </div>
 
     <div id="modal-novo" class="fixed inset-0 bg-slate-900/90 backdrop-blur-sm flex items-center justify-center z-50 p-4 hidden">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md flex flex-col max-h-[90vh] overflow-hidden">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xl flex flex-col max-h-[95vh] overflow-hidden">
             <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
                 <h3 id="modal-titulo" class="font-bold text-slate-800 text-lg flex items-center gap-2"><i class="fa-solid fa-file-pen text-teal-600"></i> Ficha do Atendimento</h3>
                 <button type="button" onclick="fecharModalNovo()" class="text-slate-400 hover:text-rose-500 transition-colors w-8 h-8 flex items-center justify-center rounded-full bg-slate-200/50">
@@ -108,13 +105,13 @@
                         <div>
                             <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Canal</label>
                             <select id="novo-canal" required class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:border-teal-500 outline-none">
-    <option value="Indicação">Indicação</option>
-    <option value="Instagram">Instagram</option>
-    <option value="Instagram (Campanha Setembro)">Instagram (Campanha Setembro)</option>
-    <option value="Loja">Loja</option>
-    <option value="Site">Site</option>
-    <option value="WhatsApp">WhatsApp</option>
-</select>
+                                <option value="Indicação">Indicação</option>
+                                <option value="Instagram">Instagram</option>
+                                <option value="Instagram (Campanha Setembro)">Instagram (Campanha Setembro)</option>
+                                <option value="Loja">Loja</option>
+                                <option value="Site">Site</option>
+                                <option value="WhatsApp">WhatsApp</option>
+                            </select>
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Orçamento?</label>
@@ -125,6 +122,20 @@
                         </div>
                     </div>
                     
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">O que o cliente procura?</label>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm text-slate-700">
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="produto" value="Porcelanatos" class="w-4 h-4 accent-teal-600"> Porcelanatos</label>
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="produto" value="Piso Vinilico/Laminado" class="w-4 h-4 accent-teal-600"> Piso Vinilico/Laminado</label>
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="produto" value="Metais" class="w-4 h-4 accent-teal-600"> Metais</label>
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="produto" value="Louças" class="w-4 h-4 accent-teal-600"> Louças</label>
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="produto" value="Pedras Naturais" class="w-4 h-4 accent-teal-600"> Pedras Naturais</label>
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="produto" value="Teto Vinilico" class="w-4 h-4 accent-teal-600"> Teto Vinilico</label>
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="check-outros" name="produto" value="Outros" class="w-4 h-4 accent-teal-600" onchange="document.getElementById('novo-produto-outros').classList.toggle('hidden', !this.checked)"> Outros</label>
+                        </div>
+                        <input type="text" id="novo-produto-outros" placeholder="Especifique o produto..." class="mt-3 w-full text-sm bg-white border border-slate-200 rounded-xl px-3 py-2 outline-none hidden">
+                    </div>
+
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Status</label>
                         <select id="novo-status" onchange="verificarStatusMotivo()" required class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:border-teal-500 outline-none">
@@ -161,7 +172,7 @@
     </div>
 
     <div id="banner-erro" class="bg-rose-600 text-white px-4 py-3 text-center text-xs font-bold hidden sticky top-0 z-50 shadow-md">
-        <i class="fa-solid fa-triangle-exclamation mr-1"></i> Falha ao conectar. Atualizando...
+        <i class="fa-solid fa-triangle-exclamation mr-1"></i> Falha ao conectar. Tentando restabelecer conexão com os dados...
     </div>
 
     <div>
@@ -207,7 +218,7 @@
                         </select>
                     </div>
                 </div>
-                <button type="button" id="btn-reset-filters" class="w-full text-xs font-bold bg-slate-100 py-2.5 rounded-xl text-slate-600"><i class="fa-solid fa-arrow-rotate-left mr-1"></i> Limpar Filtros</button>
+                <button type="button" id="btn-reset-filters" class="w-full text-xs font-bold bg-slate-100 py-2.5 rounded-xl text-slate-600 cursor-pointer"><i class="fa-solid fa-arrow-rotate-left mr-1"></i> Limpar Filtros</button>
             </div>
 
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -231,9 +242,16 @@
                 <div class="bg-white p-4 rounded-xl border border-slate-200/80"><h3 class="font-bold text-slate-700 text-xs mb-2">Motivos de Encerramento</h3><div class="chart-container"><canvas id="chart-motivos"></canvas></div></div>
             </div>
 
-            <div class="bg-white p-4 rounded-xl border border-slate-200/80 w-full">
-                <h3 class="font-bold text-slate-700 text-xs mb-2">Fluxo Diário</h3>
-                <div class="chart-container" style="height: 180px;"><canvas id="chart-evolucao"></canvas></div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full">
+                <div class="lg:col-span-2 bg-white p-4 rounded-xl border border-slate-200/80">
+                    <h3 class="font-bold text-slate-700 text-xs mb-2">Fluxo Diário</h3>
+                    <div class="chart-container" style="height: 180px;"><canvas id="chart-evolucao"></canvas></div>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200/80">
+                    <h3 class="font-bold text-slate-700 text-xs mb-3 flex items-center gap-2"><i class="fa-solid fa-ranking-star text-amber-500"></i> Top 5 Buscados</h3>
+                    <ul id="lista-top-produtos" class="space-y-2 text-sm">
+                    </ul>
+                </div>
             </div>
 
             <div class="bg-white rounded-xl border border-slate-200/80 overflow-hidden">
@@ -292,12 +310,14 @@
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzAuOrjVJGWG5IXXY9Sas74pnN_szpMtwo_Yl-VWwtQpK-1pd890CqaJHWaFIRMTw/exec"; 
+        // COLOQUE AQUI A SUA URL DA NOVA IMPLEMENTAÇÃO
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyify3Ws3ZvuQlrOhcU2LS1GhiRvUf6tu2VEhfNxvUsV0hu_bOreMon3hte1cJ5htU9/exec"; 
 
         let dadosTratados = [];
         let linhaEmEdicao = null; 
         let paginaAtual = 1;         
         const itensPorPagina = 10;   
+        let timeoutConexao = null;
         
         let chartConsultoresInstance, chartStatusInstance, chartCanaisInstance, chartEvolucaoInstance, chartMotivosInstance, chartFunilInstance;
         const BASE_ACESSOS = { "Claudia": "2021", "Fabio": "3031", "Maicon": "4041", "Adm": "9999" };
@@ -377,6 +397,7 @@
             linhaEmEdicao = null;
             document.getElementById('modal-novo').classList.remove('hidden');
             document.getElementById('form-novo').reset();
+            document.getElementById('novo-produto-outros').classList.add('hidden');
             
             const hoje = new Date();
             document.getElementById('novo-data').value = formatarDataLocal(hoje.getFullYear(), hoje.getMonth() + 1, hoje.getDate());
@@ -396,6 +417,7 @@
 
             linhaEmEdicao = rowId;
             document.getElementById('modal-novo').classList.remove('hidden');
+            document.getElementById('form-novo').reset();
 
             document.getElementById('novo-data').value = atendimento.data;
             document.getElementById('novo-nome').value = atendimento.nome;
@@ -411,6 +433,32 @@
             verificarStatusMotivo(); 
             document.getElementById('novo-motivo').value = atendimento.motivo;
 
+            // Restaura os produtos marcados
+            const produtosAtuais = atendimento.produto ? atendimento.produto.split(',').map(p => p.trim()) : [];
+            const checkboxes = document.querySelectorAll('input[name="produto"]');
+            let temOutros = false;
+            let txtOutros = "";
+
+            checkboxes.forEach(cb => {
+                if (cb.value !== "Outros") {
+                    if (produtosAtuais.includes(cb.value)) cb.checked = true;
+                }
+            });
+
+            // Verifica se sobrou algum produto que não é padrão
+            const produtosPadrao = Array.from(checkboxes).map(c => c.value);
+            const outrosItens = produtosAtuais.filter(p => !produtosPadrao.includes(p) && p !== "");
+            
+            if (outrosItens.length > 0) {
+                document.getElementById('check-outros').checked = true;
+                const inputOutros = document.getElementById('novo-produto-outros');
+                inputOutros.value = outrosItens.join(', ');
+                inputOutros.classList.remove('hidden');
+            } else {
+                document.getElementById('check-outros').checked = false;
+                document.getElementById('novo-produto-outros').classList.add('hidden');
+            }
+
             document.getElementById('btn-salvar-novo').innerHTML = '<i class="fa-solid fa-pen-to-square"></i> Atualizar Atendimento';
         }
 
@@ -424,6 +472,18 @@
             
             const consultorDefinitivo = (usuarioLogado === "Claudia" || usuarioLogado === "Maicon") ? usuarioLogado : document.getElementById('novo-consultor').value;
             
+            // Montagem dos Produtos
+            const checkboxes = document.querySelectorAll('input[name="produto"]:checked');
+            let produtosEscolhidos = [];
+            checkboxes.forEach(cb => {
+                if(cb.value === "Outros") {
+                    const txtOutros = document.getElementById('novo-produto-outros').value.trim();
+                    if(txtOutros) produtosEscolhidos.push(txtOutros);
+                } else {
+                    produtosEscolhidos.push(cb.value);
+                }
+            });
+
             const payload = {
                 row: linhaEmEdicao, 
                 data: document.getElementById('novo-data').value,
@@ -433,7 +493,8 @@
                 consultor: consultorDefinitivo,
                 orcamento: document.getElementById('novo-orcamento').value,
                 status: document.getElementById('novo-status').value,
-                motivo: document.getElementById('novo-motivo').value
+                motivo: document.getElementById('novo-motivo').value,
+                produto: produtosEscolhidos.join(", ")
             };
 
             fetch(SCRIPT_URL, {
@@ -475,7 +536,16 @@
             var scriptAntigo = document.getElementById('jsonp-bridge');
             if (scriptAntigo) scriptAntigo.remove();
 
+            if (timeoutConexao) clearTimeout(timeoutConexao);
+
+            timeoutConexao = setTimeout(() => {
+                if (dadosTratados.length === 0) {
+                    document.getElementById("banner-erro").classList.remove("hidden");
+                }
+            }, 12000);
+
             window.handleGoogleData = function(data) {
+                if (timeoutConexao) clearTimeout(timeoutConexao);
                 document.getElementById("banner-erro").classList.add("hidden");
                 if (data && !data.erro) {
                     inicializarDashboard(data);
@@ -484,8 +554,12 @@
             
             const script = document.createElement('script');
             script.id = 'jsonp-bridge';
-            script.src = SCRIPT_URL + "?callback=handleGoogleData&t=" + new Date().getTime();
-            script.onerror = () => document.getElementById("banner-erro").classList.remove("hidden");
+            script.src = SCRIPT_URL + (SCRIPT_URL.includes("?") ? "&" : "?") + "callback=handleGoogleData&t=" + new Date().getTime();
+            script.onerror = () => {
+                if (dadosTratados.length === 0) {
+                    document.getElementById("banner-erro").classList.remove("hidden");
+                }
+            };
             document.body.appendChild(script);
         }
 
@@ -500,6 +574,7 @@
             const iCon = cab.findIndex(h => h.includes("consultor"));
             const iOrc = cab.findIndex(h => h.includes("orca") || h.includes("orça"));
             const iSta = cab.findIndex(h => h.includes("status"));
+            const iProd = cab.findIndex(h => h.includes("produto"));
             const iMot = cab.findIndex(h => h.includes("motivo") || h.includes("obs"));
 
             dadosTratados = [];
@@ -526,6 +601,7 @@
                     consultor: (iCon !== -1 && col[iCon]) ? String(col[iCon]).trim() : "Sem Consultor",
                     orcamento: (iOrc !== -1 && col[iOrc]) ? String(col[iOrc]).trim() : "Não",
                     status: statusForm,
+                    produto: iProd !== -1 ? String(col[iProd]).trim() : "",
                     motivo: iMot !== -1 ? String(col[iMot]).trim() : ""
                 });
             }
@@ -640,9 +716,10 @@
             
             let fAtendimentos = 0, fQualificados = 0, fOrcamentos = 0, fVendas = 0;
 
-            // 🚨 NOVA GRADE DE MOTIVOS
             const motivosPadrao = ["Não Resp. (Pré-Orç.)", "Não Resp. (Pós-Orç.)", "Preço", "Prazo", "Curioso", "Produto Indisp.", "Concorrente", "Modelo Indisp."];
             motivosPadrao.forEach(m => cMot[m] = 0);
+            
+            const contagemProdutos = {};
 
             dados.forEach(d => { 
                 cCons[d.consultor] = (cCons[d.consultor] || 0) + 1; 
@@ -658,7 +735,6 @@
 
                 let mTratado = d.motivo || "";
                 
-                // 🚨 MAPEAMENTO INTELIGENTE DE LEGADOS E NOVOS MOTIVOS
                 if (mTratado.includes("responder") || mTratado === "Não resp.") mTratado = "Não Resp. (Pré-Orç.)";
                 if (mTratado.includes("Pré")) mTratado = "Não Resp. (Pré-Orç.)";
                 if (mTratado.includes("Pós") || mTratado.includes("Parou")) mTratado = "Não Resp. (Pós-Orç.)";
@@ -674,12 +750,17 @@
                     cMot[mTratado] = (cMot[mTratado] || 0) + 1;
                 }
 
+                // Processamento de Produtos
+                if(d.produto) {
+                    const itens = d.produto.split(",").map(p => p.trim()).filter(Boolean);
+                    itens.forEach(item => {
+                        contagemProdutos[item] = (contagemProdutos[item] || 0) + 1;
+                    });
+                }
+
                 fAtendimentos++; 
 
-                // 🚨 TRAVA DE SEGURANÇA: "Pós-Orç." garante passagem pelo Orçamento automaticamente
                 var passouPeloOrcamento = (d.orcamento === "Sim" || d.orcamento === "sim" || d.status === "Orçamento Enviado" || d.status === "Venda Efetuada" || mTratado === "Não Resp. (Pós-Orç.)");
-                
-                // 🚨 REGRA ATUALIZADA: Apenas o "Não Resp. (Pré-Orç.)" é descartado na boca do funil
                 var leadNaoQualificado = (d.status === "Encerrado" && (mTratado === "Curioso" || mTratado === "Não Resp. (Pré-Orç.)" || mTratado === "Produto Indisp."));
 
                 if (d.status === "Venda Efetuada") {
@@ -702,6 +783,21 @@
             
             var taxaConversaoReal = fOrcamentos > 0 ? Math.round((fVendas / fOrcamentos) * 100) : 0;
             document.getElementById("kpi-taxa-conclusao").innerText = taxaConversaoReal + "%";
+
+            // Renderização do Top 5 Produtos
+            const top5 = Object.entries(contagemProdutos).sort((a,b) => b[1] - a[1]).slice(0, 5);
+            const listaEl = document.getElementById("lista-top-produtos");
+            
+            if(top5.length === 0) {
+                listaEl.innerHTML = '<li class="text-xs text-slate-400 italic">Sem dados de produtos neste período.</li>';
+            } else {
+                listaEl.innerHTML = top5.map((item, index) => `
+                    <li class="flex justify-between items-center bg-slate-50 px-3 py-2 rounded-lg border border-slate-100">
+                        <span class="text-xs font-bold text-slate-700 truncate mr-2"><span class="text-teal-600 mr-1">#${index+1}</span> ${item[0]}</span>
+                        <span class="text-[11px] font-bold bg-teal-100 text-teal-800 px-2 py-0.5 rounded-full">${item[1]}</span>
+                    </li>
+                `).join('');
+            }
 
             const optVerticaisClean = { 
                 responsive: true, maintainAspectRatio: false, layout: { padding: { top: 25, left: 10, right: 10 } }, 

@@ -123,19 +123,21 @@
                     </div>
                     
                     <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">O que o cliente procura?</label>
-                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm text-slate-700">
-                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="produto" value="Porcelanatos" class="w-4 h-4 accent-teal-600"> Porcelanatos</label>
-                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="produto" value="Piso Vinilico/Laminado" class="w-4 h-4 accent-teal-600"> Piso Vinilico/Laminado</label>
-                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="produto" value="Acessórios Vinilico/Laminado" class="w-4 h-4 accent-teal-600"> Acessórios Vinilico/Laminado</label>
-                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="produto" value="Teto Vinilico" class="w-4 h-4 accent-teal-600"> Teto Vinilico</label>
-                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="produto" value="Metais" class="w-4 h-4 accent-teal-600"> Metais</label>
-                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="produto" value="Louças" class="w-4 h-4 accent-teal-600"> Louças</label>
-                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="produto" value="Pedras Naturais" class="w-4 h-4 accent-teal-600"> Pedras Naturais</label>
-                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="produto" value="Revestimentos Especiais" class="w-4 h-4 accent-teal-600"> Revestimentos Especiais</label>
-                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="check-outros" name="produto" value="Outros" class="w-4 h-4 accent-teal-600" onchange="document.getElementById('novo-produto-outros').classList.toggle('hidden', !this.checked)"> Outros</label>
-                        </div>
+                        <label for="novo-produto" class="block text-xs font-bold text-slate-500 uppercase mb-2">Qual produto motivou o contato do cliente?</label>
+                        <select id="novo-produto" required onchange="verificarProdutoOutros()" class="w-full text-sm bg-white border border-slate-200 rounded-xl px-3 py-2.5 focus:border-teal-500 outline-none">
+                            <option value="">Selecione uma categoria principal...</option>
+                            <option value="Porcelanatos">Porcelanatos</option>
+                            <option value="Piso Vinilico/Laminado">Piso Vinilico/Laminado</option>
+                            <option value="Acessórios Vinilico/Laminado">Acessórios Vinilico/Laminado</option>
+                            <option value="Teto Vinilico">Teto Vinilico</option>
+                            <option value="Metais">Metais</option>
+                            <option value="Louças">Louças</option>
+                            <option value="Pedras Naturais">Pedras Naturais</option>
+                            <option value="Revestimentos Especiais">Revestimentos Especiais</option>
+                            <option value="Outros">Outros</option>
+                        </select>
                         <input type="text" id="novo-produto-outros" placeholder="Especifique o produto..." class="mt-3 w-full text-sm bg-white border border-slate-200 rounded-xl px-3 py-2 outline-none hidden">
+                        <p id="aviso-produto-legado" class="hidden mt-2 text-xs text-amber-700"></p>
                     </div>
 
                     <div>
@@ -395,11 +397,20 @@
             }
         }
 
+        function verificarProdutoOutros() {
+            const outros = document.getElementById('novo-produto').value === 'Outros';
+            const campo = document.getElementById('novo-produto-outros');
+            campo.classList.toggle('hidden', !outros);
+            campo.required = outros;
+            if (!outros) campo.value = '';
+        }
+
         function abrirModalNovo() {
             linhaEmEdicao = null;
             document.getElementById('modal-novo').classList.remove('hidden');
             document.getElementById('form-novo').reset();
-            document.getElementById('novo-produto-outros').classList.add('hidden');
+            document.getElementById('aviso-produto-legado').classList.add('hidden');
+            verificarProdutoOutros();
             
             const hoje = new Date();
             document.getElementById('novo-data').value = formatarDataLocal(hoje.getFullYear(), hoje.getMonth() + 1, hoje.getDate());
@@ -435,31 +446,28 @@
             verificarStatusMotivo(); 
             document.getElementById('novo-motivo').value = atendimento.motivo;
 
-            // Restaura os produtos marcados
-            const produtosAtuais = atendimento.produto ? atendimento.produto.split(',').map(p => p.trim()) : [];
-            const checkboxes = document.querySelectorAll('input[name="produto"]');
-            let temOutros = false;
-            let txtOutros = "";
-
-            checkboxes.forEach(cb => {
-                if (cb.value !== "Outros") {
-                    if (produtosAtuais.includes(cb.value)) cb.checked = true;
-                }
-            });
-
-            // Verifica se sobrou algum produto que não é padrão
-            const produtosPadrao = Array.from(checkboxes).map(c => c.value);
-            const outrosItens = produtosAtuais.filter(p => !produtosPadrao.includes(p) && p !== "");
-            
-            if (outrosItens.length > 0) {
-                document.getElementById('check-outros').checked = true;
-                const inputOutros = document.getElementById('novo-produto-outros');
-                inputOutros.value = outrosItens.join(', ');
-                inputOutros.classList.remove('hidden');
+            // Compatibilidade com registros antigos, inclusive aqueles com várias categorias.
+            const produtoSalvo = (atendimento.produto || '').trim();
+            const seletorProduto = document.getElementById('novo-produto');
+            const campoOutros = document.getElementById('novo-produto-outros');
+            const avisoLegado = document.getElementById('aviso-produto-legado');
+            avisoLegado.classList.add('hidden');
+            avisoLegado.textContent = '';
+            const categorias = Array.from(seletorProduto.options).map(o => o.value);
+            if (categorias.includes(produtoSalvo)) {
+                seletorProduto.value = produtoSalvo;
+            } else if (!produtoSalvo) {
+                seletorProduto.value = '';
+            } else if (produtoSalvo.includes(',')) {
+                // Não escolher arbitrariamente uma categoria nem apagar dados sem aviso.
+                seletorProduto.value = '';
+                avisoLegado.textContent = 'Registro antigo com múltiplos produtos: ' + produtoSalvo + '. Selecione a categoria principal antes de salvar.';
+                avisoLegado.classList.remove('hidden');
             } else {
-                document.getElementById('check-outros').checked = false;
-                document.getElementById('novo-produto-outros').classList.add('hidden');
+                seletorProduto.value = 'Outros';
+                campoOutros.value = produtoSalvo;
             }
+            verificarProdutoOutros();
 
             document.getElementById('btn-salvar-novo').innerHTML = '<i class="fa-solid fa-pen-to-square"></i> Atualizar Atendimento';
         }
@@ -474,17 +482,17 @@
             
             const consultorDefinitivo = (usuarioLogado === "Claudia" || usuarioLogado === "Maicon") ? usuarioLogado : document.getElementById('novo-consultor').value;
             
-            // Montagem dos Produtos
-            const checkboxes = document.querySelectorAll('input[name="produto"]:checked');
-            let produtosEscolhidos = [];
-            checkboxes.forEach(cb => {
-                if(cb.value === "Outros") {
-                    const txtOutros = document.getElementById('novo-produto-outros').value.trim();
-                    if(txtOutros) produtosEscolhidos.push(txtOutros);
-                } else {
-                    produtosEscolhidos.push(cb.value);
-                }
-            });
+            // Uma categoria principal por atendimento, usando o mesmo campo "produto".
+            const categoriaProduto = document.getElementById('novo-produto').value;
+            const produtoEscolhido = categoriaProduto === 'Outros'
+                ? document.getElementById('novo-produto-outros').value.trim()
+                : categoriaProduto;
+            if (!produtoEscolhido) {
+                document.getElementById('novo-produto').focus();
+                btnSalvar.disabled = false;
+                btnSalvar.innerHTML = 'Salvar Atendimento';
+                return;
+            }
 
             const payload = {
                 row: linhaEmEdicao, 
@@ -496,7 +504,7 @@
                 orcamento: document.getElementById('novo-orcamento').value,
                 status: document.getElementById('novo-status').value,
                 motivo: document.getElementById('novo-motivo').value,
-                produto: produtosEscolhidos.join(", ")
+                produto: produtoEscolhido
             };
 
             fetch(SCRIPT_URL, {
